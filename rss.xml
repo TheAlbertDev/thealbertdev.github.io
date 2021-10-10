@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[TheAlbert.Dev]]></title><description><![CDATA[Página web personal de Albert Álvarez Carulls]]></description><link>https://thealbert.dev</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 10 Oct 2021 13:56:43 GMT</lastBuildDate><item><title><![CDATA[Promedio de curvas en R]]></title><description><![CDATA[No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o…]]></description><link>https://thealbert.dev/promedio-de-curvas-en-r/</link><guid isPermaLink="false">https://thealbert.dev/promedio-de-curvas-en-r/</guid><pubDate>Fri, 05 Feb 2021 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o sets de datos. En algún centro de investigación en el que he estado disponían de Origin Pro, que tiene una función muy útil que te hace este trabajo con dos clics y medio; pero en la universidad no disponemos de este &lt;em&gt;software&lt;/em&gt; y hago todo el procesado de datos con R. Cada vez que tengo que hacer este tipo de procesado con R… Ay, mi querido R… 😅&lt;/p&gt;
+&lt;p&gt;En esta entrada, vamos a ver cómo hacer con R ese promedio de sets de datos y cómo extraer otras estadísticas como su desviación estándar.&lt;/p&gt;
+&lt;h1&gt;Para qué queremos un promedio de curvas&lt;/h1&gt;
+&lt;p&gt;Pues vamos a imaginarnos el siguiente supuesto. Tenemos un sensor que queremos caracterizar. Para ello, cogemos, no solo este sensor, sino muchos, y realizamos múltiples mediciones mientras vamos variando de manera controlada la magnitud que miden. Por ejemplo, vamos a caracterizar un &lt;a href=&quot;https://es.wikipedia.org/wiki/RTD&quot;&gt;sensor de temperatura RTD&lt;/a&gt;, una resistencia cuyo valor varía en función de la temperatura. Un ejemplo de circuito para medir esa variación de resistencia es un &lt;a href=&quot;https://es.wikipedia.org/wiki/Puente_de_Wheatstone&quot;&gt;puente de Wheatstone&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 630px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/cb425/puente-wheatstone.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 53.16455696202532%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAYAAAB/Ca1DAAAACXBIWXMAAAsTAAALEwEAmpwYAAABGUlEQVQoz3WT2YqEQAxF/f/f80XRJ0VbxH3fM5xAidNWB0LHLDfJ7ZRzXZec5/nSdV1l33dBqqqSvu/VJkbNL3W2bZNpmmRZllsBS5JEbeKAjeOo9jzPdyMrIMUY3zIMg+R5/vKTi7+uayuoTti2rWRZdgPziy8Mw3tVEzuOQwF937dO6rAKCVEU/QtCQ1mWuqrhDmEjfPAK+AsQTtDnSggTw2Ecx+ory0LSNJWu624qrBxSVBSFFj8BmQKemMJcAisaOpjQxr1yaBsdMM/zXo3ITT+puK6rwGzH1HBNQ/2XDeBT8LN20zQvQHw0I855BUGg3zRwzG0BgE0C3eALPwDmNlF85P0S5/lSsOHGvBLAbK/I1Bh6nvYfnaJbhIylzoAAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;Puente de Wheatstone&quot;
+        title=&quot;Puente de Wheatstone&quot;
+        src=&quot;/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/f058b/puente-wheatstone.png&quot;
+        srcset=&quot;/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/c26ae/puente-wheatstone.png 158w,
+/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/6bdcf/puente-wheatstone.png 315w,
+/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/f058b/puente-wheatstone.png 630w,
+/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/40601/puente-wheatstone.png 945w,
+/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/78612/puente-wheatstone.png 1260w,
+/static/8b0d6f783e05e0fbad7cb8a0ae519ce1/cb425/puente-wheatstone.png 1678w&quot;
+        sizes=&quot;(max-width: 630px) 100vw, 630px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Circuito de simulación de un puente the Wheatstone con RTD.&lt;/p&gt;
+&lt;p&gt;Para este ejemplo, he simulado en SPICE una serie de mediciones para una PT100, un sensor muy común y cuyas características puedes encontrar &lt;a href=&quot;https://es.wikipedia.org/wiki/RTD&quot;&gt;al final de esta página&lt;/a&gt;. En estas mediciones, he hecho un barrido en temperatura de -100 a 100 ºC. Además, en cada medición, he variado ligeramente la resistencia nominal a 0 ºC del PT100 y su coeficiente de temperatura (una simulación montecarlo, para los más interesados). Por lo tanto, veremos que, para un mismo rango de temperatura, obtenemos una señal de salida diferente en cada medición. Nuestro objetivo es, de estas mediciones, sacar la media y la desviación estándar para poder estimar una función de transferencia promedio y su error del sensor.&lt;/p&gt;
+&lt;p&gt;Huelga decirlo, en un caso real los datos los obtendríamos experimentalmente y no mediante una simulación.&lt;/p&gt;
+&lt;h1&gt;Sets de datos&lt;/h1&gt;
+&lt;p&gt;Antes de ponernos con R, aquí tienes los datos que hemos obtenido &lt;del&gt;de la simulación&lt;/del&gt; experimentalmente en la caracterización de nuestro sensor. Cómo verás, tenemos una respuesta que varía según el sensor que utilicemos.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 600px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/static/c7a8efacbaabeb0891a35fbfc05e1dcc/0a47e/funcion-de-transferencia.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 66.45569620253164%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAANCAYAAACpUE5eAAAACXBIWXMAAAsTAAALEwEAmpwYAAABdElEQVQ4y42TW6uCUBCF+/+/JnwQokToIUklCPSlKxloZje7X6x1WBNbtKKTMJh77/lm7TVTBQAOhwOSJPkp5vO5xHK5xGq1QhRF6Ha7sG1bvisEXi6Xt8TFYvERuF6vJYIggOu6MAwDpmmi0+lgs9k8gefz+V9FrM7o9/sC0XUdrVYLg8EAcRzLHgtVHo8HttutKFJRVMiDrDwejwWkaZooC8MwV6vOikIunE6nN1U8xD2C6vU6Go0GPM/LE+mhUs/IgdPptOQhQcrsdruNarUKx3EEwARV8JM9Atzv9zmQSbPZTJTUajU0m025WpqmX0ElID1kApUNh0NpP73yfV+urK72yePXtbzL1+sVo9FIzLYsS34TVvTnlygBOVdUR0/p4WuTfpnTHHi73dDr9TCZTATGuSqC1L+Cb4LUevHNkDkk8H6/yyxSKYMFdrudNItDTxC7zjfXsywDm8k9nmXw+3g8Ppvy7WEyr8LqLMqZ/fb8ARn+zNAxJ7YSAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;Curvas de la función de transferencia&quot;
+        title=&quot;Curvas de la función de transferencia&quot;
+        src=&quot;/static/c7a8efacbaabeb0891a35fbfc05e1dcc/0a47e/funcion-de-transferencia.png&quot;
+        srcset=&quot;/static/c7a8efacbaabeb0891a35fbfc05e1dcc/c26ae/funcion-de-transferencia.png 158w,
+/static/c7a8efacbaabeb0891a35fbfc05e1dcc/6bdcf/funcion-de-transferencia.png 315w,
+/static/c7a8efacbaabeb0891a35fbfc05e1dcc/0a47e/funcion-de-transferencia.png 600w&quot;
+        sizes=&quot;(max-width: 600px) 100vw, 600px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;h1&gt;Promedio de curvas en R&lt;/h1&gt;
+&lt;p&gt;Ahora sí, vamos en materia. Para empezar, veamos cómo tenemos organizado nuestro &lt;em&gt;data frame&lt;/em&gt;. Este consiste en tres columnas: &lt;em&gt;Voltage&lt;/em&gt;, &lt;em&gt;Temperature&lt;/em&gt; y &lt;em&gt;Group&lt;/em&gt;. Las dos primeras son claras; hacen referencia a las tensiones y temperaturas medidas. La tercera columna indica el sensor o curva. Así pues, todas las filas con el mismo grupo corresponden a una curva específica. En este caso tenemos 6 grupos o curvas. Este &lt;em&gt;data frame&lt;/em&gt; lo tenemos almacenado en la variable &lt;code class=&quot;language-text&quot;&gt;df&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 394px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/static/051c8a4ddd20cf6b441495a05e05a28a/cc097/data-frames-experimentales.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 98.73417721518987%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAACaElEQVQ4y5WUy2vqQBTG/Y+LjyqIIkg3iqKgC0HcuJDuum7tIhsV39pY37Utja8anwgi6pzLN5JcjTeBOzAkM5n85vvOOTOmSCTCPB4Pu7u7YxaLhTkcDhYKhRjmw+Ews9lsarfb7cxqtbL7+3sWDAZZNBrl6zHG90AgwEyPj48UiUTI5XKRzWYjs9lMiUSCkskkpVIp8vl85PV6ye1208PDg/oei8UI//r9fj7vdDopHo+T6XQ6MVmWWalUYs1mkxWLRZZOp/kTjYhuuiiKTBAEttvtruYlSWImIqL1ek3v7++8FwoFyufz1O/38YnAvOxo0+mUarWaOla+zedz4sDNZkONRoPa7TbV63Uql8s0GAx0gcvlkkRRpOPxeLVGluUzcLFY0NvbG1+Uy+U4/OvrSxc4Go0ok8nQ6XS6WjOZTM7A1WpFrVaLW4Y6PD8/Pw0VwrJW4e/v719gs9mk7+9v6nQ6HIjd9ICIOdYdDoerNbPZ7AzEjlAI20gKrMO2HhBKKpXKjWU1hkhKr9fjoGKxyGEfHx+6QMQcLi4to6kKlQVQJwgCZbNZwxhifbVavYkhykm1jHKBDdhW4qkHhDU40QLVLCPIsIg6hFLYNyobCMCmWiDmORAVDmXIHMqmVCpxuBEQjv4ZQ2Ww3W756QAMsTQ6erBsGMP9fs8HUAil2B3v/2tZzTIsA4JyQYahstvtGtah9iwrlwauL54QZBjxAxBgJOcSqDTlfTgccmc3tw2AkiRxAMCAwS4yrQUqTygbj8dXR0+pTw6E3ZeXF3p9faXn52d6enriavWAiBVuJS3w5+eH/gA92rrlEnUS3QAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;Dataframes experimentales&quot;
+        title=&quot;Dataframes experimentales&quot;
+        src=&quot;/static/051c8a4ddd20cf6b441495a05e05a28a/cc097/data-frames-experimentales.png&quot;
+        srcset=&quot;/static/051c8a4ddd20cf6b441495a05e05a28a/c26ae/data-frames-experimentales.png 158w,
+/static/051c8a4ddd20cf6b441495a05e05a28a/6bdcf/data-frames-experimentales.png 315w,
+/static/051c8a4ddd20cf6b441495a05e05a28a/cc097/data-frames-experimentales.png 394w&quot;
+        sizes=&quot;(max-width: 394px) 100vw, 394px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Data frame&lt;/em&gt; con los datos experimentales. Solo se muestran las primeras filas u observaciones.&lt;/p&gt;
+&lt;h2&gt;Homogeneización de la variable independiente&lt;/h2&gt;
+&lt;p&gt;Lo primero que haremos es algo que justamente ahora no necesitamos porque trabajamos con datos simulados, pero que suele ser común cuando operamos con datos experimentales. Esto es “homogeneizar” la variable independiente (en este caso, la temperatura). ¿Qué quiero decir con esto? En un caso real sería difícil realizar medidas siempre en las mismas temperaturas. En una medida haríamos una medición en 1.7 ºC, 22.5 ºC y 45.9 ºC, y en otra a 1.5 ºC, 25.0 ºC y 44.1 ºC. Pero para hacer la media, necesitamos que haya una medición (voltaje) en cada curva para cada temperatura. Por ello, lo que necesitaríamos hacer es obtener un valor de voltaje para las temperaturas 1.5 ºC, 1.7 ºC, 22.5 ºC, 25.0 ºC, 44.1 ºC y 45.9 ºC para cada uno de los sensores y curvas y, entonces, hacer la media para cada temperatura.&lt;/p&gt;
+&lt;p&gt;Después, lo que haremos para obtener una medida que no tenemos de un sensor en una temperatura dada es obtenerla mediante interpolación de las dos temperaturas más cercanas.&lt;/p&gt;
+&lt;p&gt;Vamos a ir paso a paso y vamos a empezar generando un vector con todas las temperaturas utilizadas en todas las mediciones/curvas.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;library&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;ggplot2&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+library&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;dplyr&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# Sensores/curvas. Tenemos 6.&lt;/span&gt;
+sensors &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; seq&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# Obtenemos todas las temperaturas que se han utilizado durante las mediciones.&lt;/span&gt;
+approxTemperature &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; unique&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;df&lt;span class=&quot;token operator&quot;&gt;$&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;Aproximación de la variable dependiente&lt;/h2&gt;
+&lt;p&gt;Ahora toca que, mediante interpolación, rellenemos esos espacios en blanco entre mediciones para que exista una medida (voltaje) para cada curva/sensor y temperatura.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Creamos una copia del DataFrame original, pero en blanco.&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;# Aqui guardaremos las aproximaciones/interpolaciones.&lt;/span&gt;
+approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; df&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# Recorremos todas las curvas y &quot;rellenamos&quot; los datos blanco entre temperaturas.&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;n &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt;length&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;sensors&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+
+		&lt;span class=&quot;token comment&quot;&gt;# Realizamos la interpolacion para el sensor/curva n.&lt;/span&gt;
+    approxData &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; data.frame&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+      with&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;subset&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;df&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; Group&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;sensors&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;n&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+           approx&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+								x&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+								y&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;Voltage&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+								xout &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; approxTemperature&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+								method &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;linear&quot;&lt;/span&gt;
+						&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      method &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;approx()&quot;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+		&lt;span class=&quot;token comment&quot;&gt;# Eliminamos una columna method que nos devuelve la funcion y que no queremos.&lt;/span&gt;
+    approxData&lt;span class=&quot;token operator&quot;&gt;$&lt;/span&gt;method &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;NULL&lt;/span&gt;
+		&lt;span class=&quot;token comment&quot;&gt;# Cambiamos los nombres por defecto de las columnas.&lt;/span&gt;
+    names&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;names&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;x&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Temperature&quot;&lt;/span&gt;
+    names&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;names&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;y&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Voltage&quot;&lt;/span&gt;
+
+		&lt;span class=&quot;token comment&quot;&gt;# Añadimos el numero de curva/sensor.&lt;/span&gt;
+    approxData&lt;span class=&quot;token operator&quot;&gt;$&lt;/span&gt;Group &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; sensors&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;n&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+
+		&lt;span class=&quot;token comment&quot;&gt;# Incorporamos la aproximacion al nuevo DataFrame.&lt;/span&gt;
+    approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; rbind&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxDf&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;Promedio y desviación estándar&lt;/h2&gt;
+&lt;p&gt;Finalmente, solo queda ir temperatura a temperatura y calcular el promedio y desviación estándar de todas las curvas/sensores.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Ahora si, calculamos el promedio y desviacion estandar punto a punto.&lt;/span&gt;
+approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; approxDf &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
+  group_by&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
+  summarise&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;avgVoltage &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; mean&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Voltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; sdVoltage &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; sd&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Voltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
+  arrange&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;Dibujando los resultados&lt;/h2&gt;
+&lt;p&gt;Si dibujamos los resultados con el siguiente código, nos queda algo tal que así.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Finalmente, dibujamos los resultado.&lt;/span&gt;
+transferFunction &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt;
+  ggplot&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;data &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; approxDf&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; mapping &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; aes&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;x&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; y&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;avgVoltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt;
+  labs&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+    x &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Temperatura (ºC)&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+    y &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Voltaje (V)&quot;&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt;
+  geom_ribbon&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;aes&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;ymin &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; avgVoltage &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt; sdVoltage&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; ymax &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; avgVoltage &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; sdVoltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; alpha&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;.2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; fill&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;skyblue1&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt;
+  geom_line&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+show&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;transferFunction&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 600px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/static/258b51e44e4e28dc8f9197f9b0565530/0a47e/funcion-de-transferencia-promedio.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 66.45569620253164%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAANCAYAAACpUE5eAAAACXBIWXMAAAsTAAALEwEAmpwYAAABXUlEQVQ4y42TCXOCMBCF/f8/r6cF0YZgArk8R6FYX2eXYxDUKTOPwLI8dr8lMwCoqgrGmBtZax/eF8bAOcvKC4OFWOMzkQhhgxkZlmXJL5CcczfrOO69Y6m8QLTK8L5IEQsFlRtst9up4T1RVd45Ns1UjnmSYr6UEJmGaT/irG0Mr9crdrsdJ3caVxS8h9IFomWKeCX5OgTP8WEnbEgnYjiuqDPTeWMUrVIonTfVuC7vthM2lFJODLv2GtgCmdKTasaMe8Pj8TgwNFyBVAXe4hSJWLcY2oqecLZjhp4r8IiExmucQheWOQ2ZjhmPY/2Uq7Jkg5c4w0eSwVrHbXcs/6vesP6psBAKX98NK04YMLpn/JBh9x/mhe05DndGM22PEEKLxU2edztos2l3ym/LkYzrumYdDgceFsXISGvNK8UvlwtomMN8uj+dTs1Qnh30MrVCX9/v9zifz0/z/wD/dda+Gd+DBQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;Función de transferencia promedio&quot;
+        title=&quot;Función de transferencia promedio&quot;
+        src=&quot;/static/258b51e44e4e28dc8f9197f9b0565530/0a47e/funcion-de-transferencia-promedio.png&quot;
+        srcset=&quot;/static/258b51e44e4e28dc8f9197f9b0565530/c26ae/funcion-de-transferencia-promedio.png 158w,
+/static/258b51e44e4e28dc8f9197f9b0565530/6bdcf/funcion-de-transferencia-promedio.png 315w,
+/static/258b51e44e4e28dc8f9197f9b0565530/0a47e/funcion-de-transferencia-promedio.png 600w&quot;
+        sizes=&quot;(max-width: 600px) 100vw, 600px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;La línea negra corresponde a la función de transferencia promedio de nuestro sensor y el área en azul a su desviación estándar. Se espera que al realizar una medida con uno de estos sensores, se obtenga un resultado dentro del área azul con una probabilidad del 68.26% (1σ). Si quisiéramos utilizar un intervalo de mayor confianza (probabilidad del 95%), deberíamos de dibujar 1.96σ.&lt;/p&gt;
+&lt;p&gt;Para poder ver una pequeña comparación entre el antes y el después, podemos dibujar encima las curvas de cada medición.&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 600px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/static/c888438aeec7e4a71773190b40c1b00a/0a47e/funcion-de-transferencia-promedio-superpuesta.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 66.45569620253164%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAANCAYAAACpUE5eAAAACXBIWXMAAAsTAAALEwEAmpwYAAABe0lEQVQ4y41TiW6DMAzt///atq5TYdBSylEgEAi9T9q+yeYQ9Fwky7KTPD8/Jz0A2G63SNP03yalRJZlyFXGseMFMCYu5vM5egR4PB7vLtGFTq6KlSIghTiRGNku+toYA8PGxPGxWCxKwMPh8JZRDRRGApo5wbc2gmE5CCKBLCsLMeD1esVqtWJGtbUZ0sF5niMSMYaGhR99BNv1eY/ySimkaXmWAanv/X5/x4g8MRJxDM2wMNBMOJ7PhagI+fpcbQw4m83uNFTMLoM5cdAfmrAdj5nkzCaFfKRxDbjZbDqABOb6Ib60MfSRXemnOsyfWaPhcrnkNhIpoVsePoZj+EHEGrU1vdX4NtdMmRgGIsHn7xQDc4okSbi9d4weMiTA4nSE5YbQLb+qmDaTe9bqUw1LhgeEIkaSyA5A7Xkg1RNpT7ftyZqfcrlcWEdq/VQUKIoC6/WaY3r0BCSEYE/58/kMGibtFdV5ine7XTmUV4suUytUnT4AvdlX6w+9TNSi8dqTTgAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;Función de transferencia promedio superpuesta&quot;
+        title=&quot;Función de transferencia promedio superpuesta&quot;
+        src=&quot;/static/c888438aeec7e4a71773190b40c1b00a/0a47e/funcion-de-transferencia-promedio-superpuesta.png&quot;
+        srcset=&quot;/static/c888438aeec7e4a71773190b40c1b00a/c26ae/funcion-de-transferencia-promedio-superpuesta.png 158w,
+/static/c888438aeec7e4a71773190b40c1b00a/6bdcf/funcion-de-transferencia-promedio-superpuesta.png 315w,
+/static/c888438aeec7e4a71773190b40c1b00a/0a47e/funcion-de-transferencia-promedio-superpuesta.png 600w&quot;
+        sizes=&quot;(max-width: 600px) 100vw, 600px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;h1&gt;Conclusiones&lt;/h1&gt;
+&lt;p&gt;Hay otros &lt;em&gt;softwares&lt;/em&gt; que esto te lo hacen automáticamente o en un par de clics, pero cuando no dispones de estos &lt;em&gt;softwares&lt;/em&gt; (como es mi caso), toca hacerlo a mano. En esta entrada hemos visto cómo hacer el promedio de diferentes curvas de caracterización de un sensor, pero es extrapolable a curvas de diferente tipo. De este procesado, aparte de la media, también hemos calculado la desviación estándar. Finalmente, hemos acabado dibujando la curva promedio y el área/intervalo de confianza con un 68.26% de probabilidad o 1σ.&lt;/p&gt;
+&lt;p&gt;Lo importante: aquí tenemos una chuleta de la que echar mano cuando tengamos que promediar curvas 🤣 ¡Nos vemos en la siguiente entrada!&lt;/p&gt;</content:encoded></item></channel></rss>
