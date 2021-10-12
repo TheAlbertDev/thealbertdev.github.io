@@ -19,9 +19,15 @@ declare module "styled-components" {
   export interface DefaultTheme {
     typography: {
       htmlFontSize: number
+      h5: ITypography
+      h6: ITypography
+      subtitle1: ITypography
+      body1: ITypography
       body2: ITypography
+      caption: ITypography
+      navLink: ITypography
     }
-    spacing: (multiplier: number) => number
+    spacing: (multiplier: number) => string
     palette: {
       common: {
         black: string

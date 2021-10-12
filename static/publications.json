@@ -1,0 +1,264 @@
+{
+  "works": [
+    {
+      "authors": [
+        "Álvarez-Carulla, A.",
+        "Montes-Cebrián, Y.",
+        "Colomer-Farrarons, J.",
+        "Miribel-Català, P.L."
+      ],
+      "journalTitle": "Sensors",
+      "publicationDate": { "day": null, "month": null, "year": "2021" },
+      "title": {
+        "value": "Self-powered point-of-care device for galvanic cell-based sample concentration measurement"
+      },
+      "type": "journal-article",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85103815701&partnerID=MN8TOARS",
+      "doi": "10.3390/s21082665"
+    },
+    {
+      "authors": [
+        "Alvarez-Carulla, A.",
+        "Montes-Cebrian, Y.",
+        "Puig-Vidal, M.",
+        "Colomer-Farrarons, J.",
+        "Miribel-Catala, P.L.I."
+      ],
+      "journalTitle": "IEEE Transactions on Industrial Electronics",
+      "publicationDate": { "day": null, "month": null, "year": "2021" },
+      "title": {
+        "value": "Ubiquitous Self-Powered Architecture for Fuel Cell-Based Point-of-Care Applications"
+      },
+      "type": "journal-article",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85103813353&partnerID=MN8TOARS",
+      "doi": "10.1109/TIE.2020.3029484"
+    },
+    {
+      "authors": [
+        "Aguilar, J.",
+        "Alvarez-Carulla, A.",
+        "Colmena, V.",
+        "Carreras, O.",
+        "Rabost, G.",
+        "Puig-Vidal, M.",
+        "Colomer-Farrarons, J.",
+        "Munoz, X.",
+        "Miribel-Catala, P.",
+        "Punter-Villagrasa, J."
+      ],
+      "journalTitle": "2020 35th Conference on Design of Circuits and Integrated Systems, DCIS 2020",
+      "publicationDate": { "day": null, "month": null, "year": "2020" },
+      "title": {
+        "value": "Autonomous self-powered potentiostat architecture for biomedical wearable applications."
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85098646334&partnerID=MN8TOARS",
+      "doi": "10.1109/DCIS51330.2020.9268667"
+    },
+    {
+      "authors": [
+        "Montes-Cebrián, Y.",
+        "Álvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "Puig-Vidal, M.",
+        "López-Sánchez, J.",
+        "Miribel-Català, P."
+      ],
+      "journalTitle": "Proceedings - 33rd Conference on Design of Circuits and Integrated Systems, DCIS 2018",
+      "publicationDate": { "day": null, "month": null, "year": "2019" },
+      "title": {
+        "value": "A Fuel Cell-based adaptable Self-Powered Event Detection platform enhanced for biosampling applications"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85064709136&partnerID=MN8TOARS",
+      "doi": "10.1109/DCIS.2018.8681482"
+    },
+    {
+      "authors": [
+        "Montes-Cebrián, Y.",
+        "Álvarez-Carulla, A.",
+        "Ruiz-Vega, G.",
+        "Colomer-Farrarons, J.",
+        "Puig-Vidal, M.",
+        "Baldrich, E.",
+        "Miribel-Català, P.L."
+      ],
+      "journalTitle": "Sensors (Switzerland)",
+      "publicationDate": { "day": null, "month": null, "year": "2019" },
+      "title": {
+        "value": "Competitive usb-powered hand-held potentiostat for poc applications: An hrp detection case"
+      },
+      "type": "journal-article",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85076292535&partnerID=MN8TOARS",
+      "doi": "10.3390/s19245388"
+    },
+    {
+      "authors": [
+        "Alvarez-Carulla, A.",
+        "Montes-Cebrian, Y.",
+        "Puig-Vidal, M.",
+        "Lopez-Sanchez, J.",
+        "Colomer-Farrarons, J.",
+        "Miribel-Catala, P."
+      ],
+      "journalTitle": "Proceedings - 33rd Conference on Design of Circuits and Integrated Systems, DCIS 2018",
+      "publicationDate": { "day": null, "month": null, "year": "2019" },
+      "title": {
+        "value": "Energy-Aware Adaptative Supercapacitor Storage System for Multi-Harvesting Solutions"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85064644493&partnerID=MN8TOARS",
+      "doi": "10.1109/DCIS.2018.8681464"
+    },
+    {
+      "authors": [
+        "Montes-Cebrián, Y.",
+        "Álvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "Puig-Vidal, M.",
+        "Miribel-Català, P.L."
+      ],
+      "journalTitle": "Sensors (Switzerland)",
+      "publicationDate": { "day": null, "month": null, "year": "2019" },
+      "title": {
+        "value": "Self-powered portable electronic reader for point-of-care amperometric measurements"
+      },
+      "type": "journal-article",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85071634646&partnerID=MN8TOARS",
+      "doi": "10.3390/s19173715"
+    },
+    {
+      "authors": [
+        "Albert Álvarez-Carulla",
+        "Jordi Colomer-Farrarons",
+        "Pere Ll. Miribel"
+      ],
+      "journalTitle": "Sensors for Diagnostics and Monitoring",
+      "publicationDate": { "day": "03", "month": "09", "year": "2018" },
+      "title": {
+        "value": "Low-Power Energy Harvesting Solutions for Smart Self-Powered Sensors"
+      },
+      "type": "other",
+      "url": null,
+      "doi": "10.1201/9781351250092-9"
+    },
+    {
+      "authors": [
+        "Montes-Cebrián, Y.",
+        "del Torno-de Román, L.",
+        "Álvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "Minteer, S.D.",
+        "Sabaté, N.",
+        "Miribel-Català, P.L.",
+        "Esquivel, J.P."
+      ],
+      "journalTitle": "Biosensors and Bioelectronics",
+      "publicationDate": { "day": null, "month": null, "year": "2018" },
+      "title": {
+        "value": "‘Plug-and-Power’ Point-of-Care diagnostics: A novel approach for self-powered electronic reader-based portable analytical devices"
+      },
+      "type": "journal-article",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85050406297&partnerID=MN8TOARS",
+      "doi": "10.1016/j.bios.2018.07.034"
+    },
+    {
+      "authors": [],
+      "journalTitle": "2017 Conference on Design of Circuits and Integrated Systems (DCIS)",
+      "publicationDate": { "day": null, "month": "11", "year": "2017" },
+      "title": {
+        "value": "Problem-based learning approach to introduce Analog Electronic Circuits in Biomedical Engineering Degree"
+      },
+      "type": "conference-paper",
+      "url": null,
+      "doi": null
+    },
+    {
+      "authors": [
+        "Álvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "López-Sánchez, J.",
+        "Miribel-Català, P."
+      ],
+      "journalTitle": "IEEE International Symposium on Industrial Electronics",
+      "publicationDate": { "day": null, "month": null, "year": "2016" },
+      "title": {
+        "value": "An adaptative self-powered energy harvester strain sensing device based of mechanical vibrations for structural health monitoring applications"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85000981990&partnerID=MN8TOARS",
+      "doi": "10.1109/ISIE.2016.7744964"
+    },
+    {
+      "authors": [
+        "Alvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "Lopez-Sanchez, J.",
+        "Miribel-Catala, P."
+      ],
+      "journalTitle": "2015 Conference on Design of Circuits and Integrated Systems, DCIS 2015",
+      "publicationDate": { "day": null, "month": null, "year": "2016" },
+      "title": {
+        "value": "PiezoeLectric Harvester-Based Self-Powered Adaptive Circuit with Wireless Data Transmission Capability for Structural Health Monitoring"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-84963851055&partnerID=MN8TOARS",
+      "doi": "10.1109/DCIS.2015.7388594"
+    },
+    {
+      "authors": [
+        "Mahboubi, F.E.",
+        "Bafleur, M.",
+        "Boitier, V.",
+        "Alvarez, A.",
+        "Colomer, J.",
+        "Miribel, P.",
+        "Dilhac, J.-M."
+      ],
+      "journalTitle": "Journal of Physics: Conference Series",
+      "publicationDate": { "day": null, "month": null, "year": "2016" },
+      "title": {
+        "value": "Self-Powered Adaptive Switched Architecture Storage"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85009798323&partnerID=MN8TOARS",
+      "doi": "10.1088/1742-6596/773/1/012103"
+    },
+    {
+      "authors": [
+        "Álvarez, A.",
+        "Bafleur, M.",
+        "Dilhac, J.-M.",
+        "Colomer, J.",
+        "Dragomirescu, D.",
+        "Lopez, J.",
+        "Zhu, M.",
+        "Miribel, P."
+      ],
+      "journalTitle": "Journal of Physics: Conference Series",
+      "publicationDate": { "day": null, "month": null, "year": "2016" },
+      "title": {
+        "value": "Self-Powered energy harvester strain sensing device for structural health monitoring"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-85009812363&partnerID=MN8TOARS",
+      "doi": "10.1088/1742-6596/773/1/012070"
+    },
+    {
+      "authors": [
+        "Alvarez-Carulla, A.",
+        "Colomer-Farrarons, J.",
+        "Lopez-Sanchez, J.",
+        "Miribel-Catala, P."
+      ],
+      "journalTitle": "2nd IEEE International Workshop on Metrology for Aerospace, MetroAeroSpace 2015 - Proceedings",
+      "publicationDate": { "day": null, "month": null, "year": "2015" },
+      "title": {
+        "value": "Piezoelectric Harvester-based structural health monitoring that uses a self-powered adaptive circuit"
+      },
+      "type": "conference-paper",
+      "url": "http://www.scopus.com/inward/record.url?eid=2-s2.0-84941344423&partnerID=MN8TOARS",
+      "doi": "10.1109/MetroAeroSpace.2015.7180713"
+    }
+  ]
+}
