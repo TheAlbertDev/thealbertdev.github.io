@@ -11,6 +11,7 @@ const NAV = styled.nav`
 
 const UL = styled.ul`
   margin: 0;
+  text-align: right;
 `
 
 const LI = styled.li`
@@ -25,8 +26,8 @@ const LI = styled.li`
     }
   }
 
-  &:not(:last-child) {
-    margin-right: ${props => props.theme.spacing(2)};
+  &:not(:first-child) {
+    margin-left: ${props => props.theme.spacing(2)};
   }
 `
 
