@@ -70,6 +70,13 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#___gatsby,
+#gatsby-focus-wrapper {
+  height: 100%;
+}
+
 html {
   line-height: var(--lineHeight-normal);
   font-size: var(--fontSize-root);
@@ -81,10 +88,6 @@ body {
   font-family: var(--font-body);
   font-size: var(--fontSize-1);
   color: var(--color-text);
-}
-
-footer {
-  padding: var(--spacing-6) var(--spacing-0);
 }
 
 hr {
