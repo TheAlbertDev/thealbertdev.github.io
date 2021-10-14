@@ -28,6 +28,7 @@ declare module "styled-components" {
       navLink: ITypography
     }
     spacing: (multiplier: number) => string
+    spacingRem: (multiplier: number) => string
     palette: {
       common: {
         black: string

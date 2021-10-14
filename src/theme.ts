@@ -2,6 +2,7 @@ import { DefaultTheme } from "styled-components"
 
 export const defaultTheme: DefaultTheme = {
   spacing: (multiplier: number) => 8 * multiplier + "px",
+  spacingRem: (multiplier: number) => 8 * multiplier + "rem",
   palette: {
     common: {
       black: "#000",
