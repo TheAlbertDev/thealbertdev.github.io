@@ -17,6 +17,18 @@ interface ITypography {
 
 declare module "styled-components" {
   export interface DefaultTheme {
+    breakpoints: {
+      values: {
+        xs: number
+        sm: number
+        md: number
+        lg: number
+        xl: number
+      }
+      up: (number) => string
+      down: (number) => string
+    }
+    border: string
     typography: {
       htmlFontSize: number
       h5: ITypography
