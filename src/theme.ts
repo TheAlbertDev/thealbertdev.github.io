@@ -1,6 +1,17 @@
 import { DefaultTheme } from "styled-components"
 
 export const defaultTheme: DefaultTheme = {
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+    },
+    up: breakpoint => `@media (min-width: calc(${breakpoint}px + 0.02px))`,
+    down: breakpoint => `@media (max-width: ${breakpoint}px)`,
+  },
   spacing: (multiplier: number) => 8 * multiplier + "px",
   spacingRem: (multiplier: number) => 8 * multiplier + "rem",
   palette: {
