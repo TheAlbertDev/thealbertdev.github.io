@@ -28,6 +28,7 @@ declare module "styled-components" {
       up: (number) => string
       down: (number) => string
     }
+    border: string
     typography: {
       htmlFontSize: number
       h5: ITypography

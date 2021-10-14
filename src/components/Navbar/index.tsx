@@ -1,5 +1,5 @@
 import React from "react"
-import styled, { ThemeContext } from "styled-components"
+import styled from "styled-components"
 import LogoStyled from "./Logo"
 import NavigationStyled from "./Navigation"
 import LogoSVG from "../../images/logo.svg"
@@ -12,6 +12,11 @@ const TopBar = styled.div`
   align-items: center;
   align-content: center;
   gap: ${props => props.theme.spacing(1)};
+  ${props => props.theme.breakpoints.down(props.theme.breakpoints.values.sm)} {
+    /* prettier-ignore */
+    padding: ${props => props.theme.spacing(3)} ${props =>
+      props.theme.spacing(3)};
+  }
 `
 
 const Logo = styled(LogoStyled)`
@@ -24,7 +29,6 @@ const Navigation = styled(NavigationStyled)`
 `
 
 const Navbar = () => {
-  const theme = React.useContext(ThemeContext)
   return (
     <TopBar>
       <Logo to="/" logoSVG={<LogoSVG />} />

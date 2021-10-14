@@ -4,7 +4,7 @@ import styled from "styled-components"
 const A = styled.a`
   &:hover {
     & svg {
-      opacity: 1;
+      opacity: 0.3;
     }
   }
   & svg {
