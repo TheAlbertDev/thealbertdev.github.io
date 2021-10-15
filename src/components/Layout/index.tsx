@@ -17,11 +17,17 @@ const Navbar = styled(NavbarStyled)`
 
 const GlonalWrapper = styled.div`
   margin: 0 auto;
+  width: 100%;
   max-width: ${props => props.theme.spacingRem(6)};
   padding: ${props => props.theme.spacing(3)} ${props => props.theme.spacing(6)};
   flex: 1 0 auto;
   &[data-is-root-path="true"] .bio {
     margin-bottom: ${props => props.theme.spacing(10)};
+  }
+  ${props => props.theme.breakpoints.down(props.theme.breakpoints.values.sm)} {
+    /* prettier-ignore */
+    padding: ${props => props.theme.spacing(3)} ${props =>
+      props.theme.spacing(3)};
   }
 `
 const Footer = styled(FooterStyled)`
