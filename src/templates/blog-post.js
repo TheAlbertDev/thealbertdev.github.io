@@ -1,14 +1,9 @@
 import * as React from "react"
 import { Link, graphql } from "gatsby"
-
 import Bio from "../components/bio"
 import Layout from "../components/Layout"
 import Seo from "../components/seo"
-import styled from "styled-components"
-
-const HR = styled.hr`
-  border-top: ${props => props.theme.border};
-`
+import HR from "../components/HR"
 
 const BlogPostTemplate = ({ data, location }) => {
   const post = data.markdownRemark
