@@ -15,7 +15,9 @@ const InformationSource = styled.p`
   letter-spacing: ${props => props.theme.typography.caption.letterSpacing};
 `
 
-const Publication = styled.li``
+const Publication = styled.li`
+  margin-left: ${props => props.theme.spacing(3)};
+`
 const Title = styled.h1`
   font-family: ${props => props.theme.typography.h6.fontFamily};
   font-weight: ${props => props.theme.typography.h6.fontWeight};
