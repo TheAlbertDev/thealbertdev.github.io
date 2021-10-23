@@ -1,5 +1,5 @@
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 
 const A = styled.a`
   &:hover {
@@ -8,7 +8,7 @@ const A = styled.a`
     }
   }
   & svg {
-    fill: ${props => props.theme.palette.common.black};
+    fill: ${({ theme }) => theme.colors.black};
     opacity: 0.5;
     transition: opacity 0.2s ease-in-out;
   }

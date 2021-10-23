@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 
 const HR = styled.hr`
   height: 1px;

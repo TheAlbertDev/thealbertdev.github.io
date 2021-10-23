@@ -1,5 +1,6 @@
 import React from "react"
-import styled, { useTheme } from "styled-components"
+import styled from "@emotion/styled"
+import { useTheme } from "@emotion/react"
 import SocialNetwork from "./SocialNetwork"
 import GitHubIcon from "../../images/github-icon.svg"
 import TwitterIcon from "../../images/twitter-icon.svg"
@@ -11,7 +12,7 @@ const Div = styled.div`
   flex-grow: 0;
   display: flex;
   justify-content: center;
-  gap: ${props => props.theme.spacing(2)};
+  gap: ${({ theme }) => theme.space[2]};
 `
 
 const iconHeightWidth = 3
@@ -24,8 +25,8 @@ const SocialNetworks = () => {
         to="https://github.com/TheAlbertDev"
         svg={
           <GitHubIcon
-            width={theme.spacing(iconHeightWidth)}
-            height={theme.spacing(iconHeightWidth)}
+            width={theme.space[iconHeightWidth]}
+            height={theme.space[iconHeightWidth]}
           />
         }
       />
@@ -33,8 +34,8 @@ const SocialNetworks = () => {
         to="https://twitter.com/thealbertdev"
         svg={
           <TwitterIcon
-            width={theme.spacing(iconHeightWidth)}
-            height={theme.spacing(iconHeightWidth)}
+            width={theme.space[iconHeightWidth]}
+            height={theme.space[iconHeightWidth]}
           />
         }
       />
@@ -42,8 +43,8 @@ const SocialNetworks = () => {
         to="https://www.linkedin.com/in/thealbertdev/"
         svg={
           <LinkedinIcon
-            width={theme.spacing(iconHeightWidth)}
-            height={theme.spacing(iconHeightWidth)}
+            width={theme.space[iconHeightWidth]}
+            height={theme.space[iconHeightWidth]}
           />
         }
       />
@@ -51,8 +52,8 @@ const SocialNetworks = () => {
         to="https://www.instagram.com/thealbertdev/"
         svg={
           <InstagramIcon
-            width={theme.spacing(iconHeightWidth)}
-            height={theme.spacing(iconHeightWidth)}
+            width={theme.space[iconHeightWidth]}
+            height={theme.space[iconHeightWidth]}
           />
         }
       />
@@ -60,8 +61,8 @@ const SocialNetworks = () => {
         to="https://www.youtube.com/channel/UCoQmCW4NZVIb6_KyT1bt7bw"
         svg={
           <YoutubeIcon
-            width={theme.spacing(iconHeightWidth)}
-            height={theme.spacing(iconHeightWidth)}
+            width={theme.space[iconHeightWidth]}
+            height={theme.space[iconHeightWidth]}
           />
         }
       />

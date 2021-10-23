@@ -1,21 +1,20 @@
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import LogoStyled from "./Logo"
 import NavigationStyled from "./Navigation"
 import LogoSVG from "../../images/logo.svg"
 
 const TopBar = styled.div`
-  padding: ${props => props.theme.spacing(3)} ${props => props.theme.spacing(6)};
+  padding: ${({ theme }) => theme.space[6]} ${({ theme }) => theme.space[6]};
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   align-content: center;
-  gap: ${props => props.theme.spacing(1)};
-  ${props => props.theme.breakpoints.down(props.theme.breakpoints.values.sm)} {
+  gap: ${({ theme }) => theme.space[1]};
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     /* prettier-ignore */
-    padding: ${props => props.theme.spacing(3)} ${props =>
-      props.theme.spacing(3)};
+    padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[3]};
   }
 `
 
@@ -31,7 +30,7 @@ const Navigation = styled(NavigationStyled)`
 const Navbar = () => {
   return (
     <TopBar>
-      <Logo to="/" logoSVG={<LogoSVG />} />
+      {/* <Logo to="/" logoSVG={<LogoSVG />} /> */}
       <Navigation
         pages={[
           { text: "blog", to: "/" },

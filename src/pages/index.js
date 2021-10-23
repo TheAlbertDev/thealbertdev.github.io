@@ -3,7 +3,7 @@ import { Link, graphql } from "gatsby"
 
 import Bio from "../components/bio"
 import Layout from "../components/Layout"
-import Seo from "../components/seo"
+// import Seo from "../components/seo"
 
 const BlogIndex = ({ data, location }) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
@@ -11,7 +11,7 @@ const BlogIndex = ({ data, location }) => {
 
   return (
     <Layout location={location} title={siteTitle}>
-      <Seo title="Todas las entradas" />
+      {/* <Seo title="Todas las entradas" /> */}
       <Bio />
       <ol style={{ listStyle: `none` }}>
         {posts.map(post => {

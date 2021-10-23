@@ -1,5 +1,5 @@
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import Copyright from "./Copyright"
 import SocialNetworks from "./SocialNetworks"
 
@@ -10,16 +10,16 @@ const Footer = styled.footer`
   justify-content: space-between;
   align-items: center;
   align-content: center;
-  margin: 0 ${props => props.theme.spacing(6)};
-  padding: ${props => props.theme.spacing(6)} 0;
-  border-top: ${props => props.theme.border};
-  ${props => props.theme.breakpoints.down(800)} {
+  margin: 0 ${({ theme }) => theme.space[6]};
+  padding: ${({ theme }) => theme.space[6]} 0;
+  border-top: ${({ theme }) => theme.borders["1px"]};
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     flex-direction: column;
     justify-content: center;
-    gap: ${props => props.theme.spacing(1)};
+    gap: ${({ theme }) => theme.space[1]};
   }
-  ${props => props.theme.breakpoints.down(props.theme.breakpoints.values.sm)} {
-    margin: 0 ${props => props.theme.spacing(3)};
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin: 0 ${({ theme }) => theme.space[3]};
   }
 `
 
@@ -27,7 +27,7 @@ const FooterStyled = () => {
   return (
     <Footer>
       <Copyright />
-      <SocialNetworks />
+      {/* <SocialNetworks /> */}
     </Footer>
   )
 }

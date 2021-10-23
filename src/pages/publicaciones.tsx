@@ -1,9 +1,9 @@
 import * as React from "react"
 import { Link, graphql } from "gatsby"
 import Layout from "../components/Layout"
-import styled from "styled-components"
-import Seo from "../components/seo"
-import Bio from "../components/bio"
+import styled from "@emotion/styled"
+// import Seo from "../components/seo"
+// import Bio from "../components/bio"
 import LinkIcon from "../images/link-icon.svg"
 import publications from "../../static/publications.json"
 
@@ -90,8 +90,8 @@ const Publications = ({ data, location }) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
   return (
     <Layout location={location} title={siteTitle}>
-      <Seo title="Todas las publicaciones" />
-      <Bio />
+      {/* <Seo title="Todas las publicaciones" /> */}
+      {/* <Bio /> */}
       <InformationSource>
         &#9432; Información obtenida de{" "}
         <a

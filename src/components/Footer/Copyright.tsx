@@ -1,10 +1,10 @@
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 
 const DIV = styled.div`
-  font-family: ${props => props.theme.typography.navLink.fontFamily};
-  font-size: ${props => props.theme.typography.navLink.fontSize};
-  font-weight: ${props => props.theme.typography.navLink.fontWeight};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.normal};
   flex-grow: 0;
   text-align: center;
 `

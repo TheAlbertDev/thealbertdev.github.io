@@ -11,7 +11,7 @@ import { StaticImage } from "gatsby-plugin-image"
 
 const Bio = () => {
   const data = useStaticQuery(graphql`
-    query BioQuery {
+    {
       site {
         siteMetadata {
           author {
