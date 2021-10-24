@@ -1,7 +1,8 @@
 import React from "react"
 import { PageProps } from "gatsby"
-import styled, { ThemeProvider } from "styled-components"
-import { defaultTheme as theme } from "../../theme"
+import { ChakraProvider } from "@chakra-ui/react"
+import theme from "../../theme/theme"
+import styled from "@emotion/styled"
 import FooterStyled from "../Footer"
 import NavbarStyled from "../Navbar"
 
@@ -15,21 +16,21 @@ const Navbar = styled(NavbarStyled)`
   flex-shrink: 0;
 `
 
-const GlonalWrapper = styled.div`
+const GlobalWrapper = styled.div`
   margin: 0 auto;
   width: 100%;
-  max-width: ${props => props.theme.spacingRem(6)};
-  padding: ${props => props.theme.spacing(3)} ${props => props.theme.spacing(6)};
+  max-width: ${({ theme }) => theme.sizes.container.sm};
+  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[6]};
   flex: 1 0 auto;
   &[data-is-root-path="true"] .bio {
-    margin-bottom: ${props => props.theme.spacing(10)};
+    margin-bottom: ${({ theme }) => theme.space[10]};
   }
-  ${props => props.theme.breakpoints.down(props.theme.breakpoints.values.sm)} {
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     /* prettier-ignore */
-    padding: ${props => props.theme.spacing(3)} ${props =>
-      props.theme.spacing(3)};
+    padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[3]};
   }
 `
+
 const Footer = styled(FooterStyled)`
   flex-shrink: 0;
 `
@@ -45,16 +46,16 @@ const Layout = ({ location, title, children }: TLayoutProps) => {
   const isRootPath = location.pathname === rootPath
 
   return (
-    <ThemeProvider theme={theme}>
+    <ChakraProvider theme={theme} resetCSS={false}>
       <title>{title}</title>
       <FlexWrapper>
         <Navbar />
-        <GlonalWrapper data-is-root-path={isRootPath}>
+        <GlobalWrapper data-is-root-path={isRootPath}>
           <main>{children}</main>
-        </GlonalWrapper>
+        </GlobalWrapper>
         <Footer />
       </FlexWrapper>
-    </ThemeProvider>
+    </ChakraProvider>
   )
 }
 

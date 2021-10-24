@@ -1,12 +1,11 @@
-import { propTypes } from "gatsby-plugin-image/dist/src/components/gatsby-image.server"
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { Link } from "gatsby"
 
 const NAV = styled.nav`
-  font-family: ${props => props.theme.typography.navLink.fontFamily};
-  font-size: ${props => props.theme.typography.navLink.fontSize};
-  font-weight: ${props => props.theme.typography.navLink.fontWeight};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.light};
 `
 
 const UL = styled.ul`
@@ -19,15 +18,15 @@ const LI = styled.li`
   margin: 0;
   & a {
     text-decoration: none;
-    color: ${props => props.theme.palette.common.black};
+    color: ${({ theme }) => theme.colors.white};
     transition: opacity 0.2s ease-in-out;
     &:hover {
       opacity: 0.5;
     }
   }
 
-  &:not(:first-child) {
-    margin-left: ${props => props.theme.spacing(2)};
+  &:not(:first-of-type) {
+    margin-left: ${({ theme }) => theme.space[2]};
   }
 `
 

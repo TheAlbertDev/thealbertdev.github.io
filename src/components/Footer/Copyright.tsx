@@ -1,20 +1,22 @@
 import React from "react"
-import styled from "styled-components"
-
-const DIV = styled.div`
-  font-family: ${props => props.theme.typography.navLink.fontFamily};
-  font-size: ${props => props.theme.typography.navLink.fontSize};
-  font-weight: ${props => props.theme.typography.navLink.fontWeight};
-  flex-grow: 0;
-  text-align: center;
-`
+import { Text } from "@chakra-ui/layout"
+import { useTheme } from "@chakra-ui/react"
 
 const Copyright = () => {
+  const theme = useTheme()
   return (
-    <DIV>
+    <Text
+      fontFamily={theme.fonts.body}
+      fontSize={theme.fontSizes.sm}
+      fontWeight={theme.fontWeights.medium}
+      flexGrow={0}
+      textAlign="center"
+      color="whiteAlpha.900"
+      opacity={0.4}
+    >
       © {new Date().getFullYear()} por Albert Álvarez Carulla. Todos los
       Derechos Reservados.
-    </DIV>
+    </Text>
   )
 }
 

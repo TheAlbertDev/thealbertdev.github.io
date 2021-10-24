@@ -3,7 +3,6 @@ import { Link, graphql } from "gatsby"
 import Bio from "../components/bio"
 import Layout from "../components/Layout"
 import Seo from "../components/seo"
-import HR from "../components/HR"
 
 const BlogPostTemplate = ({ data, location }) => {
   const post = data.markdownRemark
@@ -23,19 +22,18 @@ const BlogPostTemplate = ({ data, location }) => {
       >
         <header>
           <h1 itemProp="headline">{post.frontmatter.title}</h1>
-          <p>
+          <span style={{ marginBottom: "32px" }}>
             {post.frontmatter.date.charAt(0).toUpperCase() +
               post.frontmatter.date.slice(1)}
-          </p>
+          </span>
         </header>
         <section
           dangerouslySetInnerHTML={{ __html: post.html }}
           itemProp="articleBody"
         />
-        <HR />
-        <footer>
+        <div style={{ marginTop: "24px" }}>
           <Bio />
-        </footer>
+        </div>
       </article>
       <nav className="blog-post-nav">
         <ul

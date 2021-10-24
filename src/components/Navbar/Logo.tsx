@@ -1,9 +1,12 @@
 import React from "react"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { Link } from "gatsby"
 
 const LinkStyled = styled(Link)`
   width: 167px;
+  svg {
+    fill: white;
+  }
 `
 
 type TLogo = {
