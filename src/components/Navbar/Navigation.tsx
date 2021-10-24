@@ -18,7 +18,7 @@ const LI = styled.li`
   margin: 0;
   & a {
     text-decoration: none;
-    color: ${({ theme }) => theme.colors.black};
+    color: ${({ theme }) => theme.colors.white};
     transition: opacity 0.2s ease-in-out;
     &:hover {
       opacity: 0.5;

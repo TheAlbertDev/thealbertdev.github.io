@@ -1,48 +1,41 @@
 import * as React from "react"
-import { Link, graphql } from "gatsby"
+import { graphql, PageProps } from "gatsby"
 import Layout from "../components/Layout"
+import { Tag } from "@chakra-ui/tag"
 import styled from "@emotion/styled"
-// import Seo from "../components/seo"
-// import Bio from "../components/bio"
+import Seo from "../components/seo"
+import Bio from "../components/bio"
 import LinkIcon from "../images/link-icon.svg"
 import publications from "../../static/publications.json"
 
-const InformationSource = styled.p`
-  font-family: ${props => props.theme.typography.caption.fontFamily};
-  font-weight: ${props => props.theme.typography.caption.fontWeight};
-  font-size: ${props => props.theme.typography.caption.fontSize};
-  line-height: ${props => props.theme.typography.caption.lineHeight};
-  letter-spacing: ${props => props.theme.typography.caption.letterSpacing};
+const InformationSource = styled.span`
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.light};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin-top: 32px;
+  margin-bottom: 64px;
+  display: block;
 `
 
 const Publication = styled.li`
-  margin-left: ${props => props.theme.spacing(3)};
+  margin-left: 30px;
+  &:not(:last-of-type) {
+    margin-bottom: 64px;
+  }
 `
-const Title = styled.h1`
-  font-family: ${props => props.theme.typography.h6.fontFamily};
-  font-weight: ${props => props.theme.typography.h6.fontWeight};
-  font-size: ${props => props.theme.typography.h6.fontSize};
-  line-height: ${props => props.theme.typography.h6.lineHeight};
-  letter-spacing: ${props => props.theme.typography.h6.letterSpacing};
+const Title = styled.h3`
+  margin-top: 0;
   margin-bottom: 0;
 `
-const Journal = styled.h2`
-  font-family: ${props => props.theme.typography.body1.fontFamily};
-  font-weight: ${props => props.theme.typography.body1.fontWeight};
-  font-size: ${props => props.theme.typography.body1.fontSize};
-  line-height: ${props => props.theme.typography.body1.lineHeight};
-  letter-spacing: ${props => props.theme.typography.body1.letterSpacing};
+const Journal = styled.span`
   margin: 0;
 `
-const Authors = styled.p`
-  font-family: ${props => props.theme.typography.body2.fontFamily};
-  font-weight: ${props => props.theme.typography.body2.fontWeight};
-  font-size: ${props => props.theme.typography.body2.fontSize};
-  line-height: ${props => props.theme.typography.body2.lineHeight};
-  letter-spacing: ${props => props.theme.typography.body2.letterSpacing};
-  margin-bottom: ${props => props.theme.spacing(1)};
+const Authors = styled.div`
+  margin-bottom: ${({ theme }) => theme.space[1]};
 `
-const PublicationDate = Authors
+const PublicationDate = styled.span`
+  margin-bottom: ${({ theme }) => theme.space[1]};
+`
 
 const PublicationLink = (props: {
   doi: string
@@ -52,7 +45,6 @@ const PublicationLink = (props: {
 
   const A = styled.a`
     text-decoration: none;
-
     &:hover svg {
       opacity: 1;
     }
@@ -60,38 +52,45 @@ const PublicationLink = (props: {
 
   const LinkIconContainer = styled.div`
     display: block;
-    width: ${props => props.theme.spacing(2)};
-    line-height: ${props => props.theme.typography.h6.lineHeight};
+    width: 24px;
     float: left;
-    margin-left: ${props => props.theme.spacing(-3)};
-    margin-right: ${props => props.theme.spacing(1)};
+    margin-left: -30px;
+    margin-right: 6px;
     & svg {
-      fill: ${props => props.theme.palette.common.black};
+      fill: ${({ theme }) => theme.colors.white};
       opacity: 0.5;
       transition: opacity 0.2s ease-in-out;
     }
   `
 
   return (
-    <A
-      href={"https://www.doi.org/" + props.doi}
-      target="_blank"
-      rel="noopener noreferrer nofollow"
-    >
-      <LinkIconContainer>
-        <LinkIcon />
-      </LinkIconContainer>
-      {props.children}
-    </A>
+    <div>
+      <A
+        href={"https://www.doi.org/" + props.doi}
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+      >
+        <LinkIconContainer>
+          <LinkIcon />
+        </LinkIconContainer>
+        {props.children}
+      </A>
+    </div>
   )
 }
 
-const Publications = ({ data, location }) => {
+const Publications = ({
+  data,
+  location,
+}: {
+  data: any
+  location: PageProps["location"]
+}) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
   return (
     <Layout location={location} title={siteTitle}>
-      {/* <Seo title="Todas las publicaciones" /> */}
-      {/* <Bio /> */}
+      <Seo title="Todas las publicaciones" />
+      <Bio />
       <InformationSource>
         &#9432; Información obtenida de{" "}
         <a
@@ -150,19 +149,18 @@ const Publications = ({ data, location }) => {
 
           return (
             <Publication key={index}>
+              <Tag size="sm" colorScheme="teal">
+                {publicationType}
+              </Tag>
               <PublicationLink doi={work.doi}>
                 <Title>{work.title.value}</Title>
               </PublicationLink>
-              <Journal>
-                {publicationType}
-                {": "}
-                {work.journalTitle}
-              </Journal>
-              <Authors>{work.authors.join(", ")}</Authors>
+              <Journal>{work.journalTitle}</Journal> |{" "}
               <PublicationDate>
                 {publicationDateString.charAt(0).toUpperCase() +
                   publicationDateString.slice(1)}
               </PublicationDate>
+              <Authors>{work.authors.join(", ")}</Authors>
             </Publication>
           )
         })}

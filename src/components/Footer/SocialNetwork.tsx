@@ -8,7 +8,7 @@ const A = styled.a`
     }
   }
   & svg {
-    fill: ${({ theme }) => theme.colors.black};
+    fill: ${({ theme }) => theme.colors.white};
     opacity: 0.5;
     transition: opacity 0.2s ease-in-out;
   }

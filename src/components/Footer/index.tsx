@@ -12,7 +12,6 @@ const Footer = styled.footer`
   align-content: center;
   margin: 0 ${({ theme }) => theme.space[6]};
   padding: ${({ theme }) => theme.space[6]} 0;
-  border-top: ${({ theme }) => theme.borders["1px"]};
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     flex-direction: column;
     justify-content: center;
@@ -27,7 +26,7 @@ const FooterStyled = () => {
   return (
     <Footer>
       <Copyright />
-      {/* <SocialNetworks /> */}
+      <SocialNetworks />
     </Footer>
   )
 }

@@ -1,14 +1,16 @@
 // theme.ts
 import { extendTheme } from "@chakra-ui/react"
+import styles from "./styles"
+import fonts from "./fonts"
+import config from "./config"
 
 const theme = extendTheme({
-  config: {
-    useSystemColorMode: false,
-    initialColorMode: "dark",
-  },
+  styles,
+  fonts,
+  config,
 })
 
 type Theme = typeof theme
 
 export type { Theme }
-export { theme }
+export default theme

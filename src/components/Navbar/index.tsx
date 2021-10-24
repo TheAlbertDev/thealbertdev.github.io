@@ -30,7 +30,7 @@ const Navigation = styled(NavigationStyled)`
 const Navbar = () => {
   return (
     <TopBar>
-      {/* <Logo to="/" logoSVG={<LogoSVG />} /> */}
+      <Logo to="/" logoSVG={<LogoSVG />} />
       <Navigation
         pages={[
           { text: "blog", to: "/" },

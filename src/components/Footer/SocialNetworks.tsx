@@ -15,7 +15,7 @@ const Div = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `
 
-const iconHeightWidth = 3
+const iconHeightWidth = 7
 
 const SocialNetworks = () => {
   const theme = useTheme()

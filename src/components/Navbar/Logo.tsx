@@ -4,6 +4,9 @@ import { Link } from "gatsby"
 
 const LinkStyled = styled(Link)`
   width: 167px;
+  svg {
+    fill: white;
+  }
 `
 
 type TLogo = {
