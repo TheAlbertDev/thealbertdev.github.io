@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[TheAlbert.Dev]]></title><description><![CDATA[Página web personal de Albert Álvarez Carulls]]></description><link>https://thealbert.dev</link><generator>GatsbyJS</generator><lastBuildDate>Fri, 15 Oct 2021 08:57:06 GMT</lastBuildDate><item><title><![CDATA[Promedio de curvas en R]]></title><description><![CDATA[No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o…]]></description><link>https://thealbert.dev/blog/promedio-de-curvas-en-r/</link><guid isPermaLink="false">https://thealbert.dev/blog/promedio-de-curvas-en-r/</guid><pubDate>Fri, 05 Feb 2021 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o sets de datos. En algún centro de investigación en el que he estado disponían de Origin Pro, que tiene una función muy útil que te hace este trabajo con dos clics y medio; pero en la universidad no disponemos de este &lt;em&gt;software&lt;/em&gt; y hago todo el procesado de datos con R. Cada vez que tengo que hacer este tipo de procesado con R… Ay, mi querido R… 😅&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[TheAlbert.Dev]]></title><description><![CDATA[Página web personal de Albert Álvarez Carulls]]></description><link>https://thealbert.dev</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 24 Oct 2021 00:48:28 GMT</lastBuildDate><item><title><![CDATA[Promedio de curvas en R]]></title><description><![CDATA[No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o…]]></description><link>https://thealbert.dev/blog/promedio-de-curvas-en-r/</link><guid isPermaLink="false">https://thealbert.dev/blog/promedio-de-curvas-en-r/</guid><pubDate>Fri, 05 Feb 2021 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o sets de datos. En algún centro de investigación en el que he estado disponían de Origin Pro, que tiene una función muy útil que te hace este trabajo con dos clics y medio; pero en la universidad no disponemos de este &lt;em&gt;software&lt;/em&gt; y hago todo el procesado de datos con R. Cada vez que tengo que hacer este tipo de procesado con R… Ay, mi querido R… 😅&lt;/p&gt;
 &lt;p&gt;En esta entrada, vamos a ver cómo hacer con R ese promedio de sets de datos y cómo extraer otras estadísticas como su desviación estándar.&lt;/p&gt;
-&lt;h1&gt;Para qué queremos un promedio de curvas&lt;/h1&gt;
+&lt;h2&gt;Para qué queremos un promedio de curvas&lt;/h2&gt;
 &lt;p&gt;Pues vamos a imaginarnos el siguiente supuesto. Tenemos un sensor que queremos caracterizar. Para ello, cogemos, no solo este sensor, sino muchos, y realizamos múltiples mediciones mientras vamos variando de manera controlada la magnitud que miden. Por ejemplo, vamos a caracterizar un &lt;a href=&quot;https://es.wikipedia.org/wiki/RTD&quot;&gt;sensor de temperatura RTD&lt;/a&gt;, una resistencia cuyo valor varía en función de la temperatura. Un ejemplo de circuito para medir esa variación de resistencia es un &lt;a href=&quot;https://es.wikipedia.org/wiki/Puente_de_Wheatstone&quot;&gt;puente de Wheatstone&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;span
       class=&quot;gatsby-resp-image-wrapper&quot;
@@ -38,7 +38,7 @@
 &lt;p&gt;Circuito de simulación de un puente the Wheatstone con RTD.&lt;/p&gt;
 &lt;p&gt;Para este ejemplo, he simulado en SPICE una serie de mediciones para una PT100, un sensor muy común y cuyas características puedes encontrar &lt;a href=&quot;https://es.wikipedia.org/wiki/RTD&quot;&gt;al final de esta página&lt;/a&gt;. En estas mediciones, he hecho un barrido en temperatura de -100 a 100 ºC. Además, en cada medición, he variado ligeramente la resistencia nominal a 0 ºC del PT100 y su coeficiente de temperatura (una simulación montecarlo, para los más interesados). Por lo tanto, veremos que, para un mismo rango de temperatura, obtenemos una señal de salida diferente en cada medición. Nuestro objetivo es, de estas mediciones, sacar la media y la desviación estándar para poder estimar una función de transferencia promedio y su error del sensor.&lt;/p&gt;
 &lt;p&gt;Huelga decirlo, en un caso real los datos los obtendríamos experimentalmente y no mediante una simulación.&lt;/p&gt;
-&lt;h1&gt;Sets de datos&lt;/h1&gt;
+&lt;h2&gt;Sets de datos&lt;/h2&gt;
 &lt;p&gt;Antes de ponernos con R, aquí tienes los datos que hemos obtenido &lt;del&gt;de la simulación&lt;/del&gt; experimentalmente en la caracterización de nuestro sensor. Cómo verás, tenemos una respuesta que varía según el sensor que utilicemos.&lt;/p&gt;
 &lt;p&gt;&lt;span
       class=&quot;gatsby-resp-image-wrapper&quot;
@@ -70,7 +70,7 @@
       /&gt;
   &lt;/a&gt;
     &lt;/span&gt;&lt;/p&gt;
-&lt;h1&gt;Promedio de curvas en R&lt;/h1&gt;
+&lt;h2&gt;Promedio de curvas en R&lt;/h2&gt;
 &lt;p&gt;Ahora sí, vamos en materia. Para empezar, veamos cómo tenemos organizado nuestro &lt;em&gt;data frame&lt;/em&gt;. Este consiste en tres columnas: &lt;em&gt;Voltage&lt;/em&gt;, &lt;em&gt;Temperature&lt;/em&gt; y &lt;em&gt;Group&lt;/em&gt;. Las dos primeras son claras; hacen referencia a las tensiones y temperaturas medidas. La tercera columna indica el sensor o curva. Así pues, todas las filas con el mismo grupo corresponden a una curva específica. En este caso tenemos 6 grupos o curvas. Este &lt;em&gt;data frame&lt;/em&gt; lo tenemos almacenado en la variable &lt;code class=&quot;language-text&quot;&gt;df&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;span
       class=&quot;gatsby-resp-image-wrapper&quot;
@@ -103,7 +103,7 @@
   &lt;/a&gt;
     &lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;Data frame&lt;/em&gt; con los datos experimentales. Solo se muestran las primeras filas u observaciones.&lt;/p&gt;
-&lt;h2&gt;Homogeneización de la variable independiente&lt;/h2&gt;
+&lt;h3&gt;Homogeneización de la variable independiente&lt;/h3&gt;
 &lt;p&gt;Lo primero que haremos es algo que justamente ahora no necesitamos porque trabajamos con datos simulados, pero que suele ser común cuando operamos con datos experimentales. Esto es “homogeneizar” la variable independiente (en este caso, la temperatura). ¿Qué quiero decir con esto? En un caso real sería difícil realizar medidas siempre en las mismas temperaturas. En una medida haríamos una medición en 1.7 ºC, 22.5 ºC y 45.9 ºC, y en otra a 1.5 ºC, 25.0 ºC y 44.1 ºC. Pero para hacer la media, necesitamos que haya una medición (voltaje) en cada curva para cada temperatura. Por ello, lo que necesitaríamos hacer es obtener un valor de voltaje para las temperaturas 1.5 ºC, 1.7 ºC, 22.5 ºC, 25.0 ºC, 44.1 ºC y 45.9 ºC para cada uno de los sensores y curvas y, entonces, hacer la media para cada temperatura.&lt;/p&gt;
 &lt;p&gt;Después, lo que haremos para obtener una medida que no tenemos de un sensor en una temperatura dada es obtenerla mediante interpolación de las dos temperaturas más cercanas.&lt;/p&gt;
 &lt;p&gt;Vamos a ir paso a paso y vamos a empezar generando un vector con todas las temperaturas utilizadas en todas las mediciones/curvas.&lt;/p&gt;
@@ -115,7 +115,7 @@ sensors &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; seq&
 
 &lt;span class=&quot;token comment&quot;&gt;# Obtenemos todas las temperaturas que se han utilizado durante las mediciones.&lt;/span&gt;
 approxTemperature &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; unique&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;df&lt;span class=&quot;token operator&quot;&gt;$&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;Aproximación de la variable dependiente&lt;/h2&gt;
+&lt;h3&gt;Aproximación de la variable dependiente&lt;/h3&gt;
 &lt;p&gt;Ahora toca que, mediante interpolación, rellenemos esos espacios en blanco entre mediciones para que exista una medida (voltaje) para cada curva/sensor y temperatura.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Creamos una copia del DataFrame original, pero en blanco.&lt;/span&gt;
 &lt;span class=&quot;token comment&quot;&gt;# Aqui guardaremos las aproximaciones/interpolaciones.&lt;/span&gt;
@@ -150,14 +150,14 @@ approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; df&
     approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; rbind&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;approxDf&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; approxData&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
 
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;Promedio y desviación estándar&lt;/h2&gt;
+&lt;h3&gt;Promedio y desviación estándar&lt;/h3&gt;
 &lt;p&gt;Finalmente, solo queda ir temperatura a temperatura y calcular el promedio y desviación estándar de todas las curvas/sensores.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Ahora si, calculamos el promedio y desviacion estandar punto a punto.&lt;/span&gt;
 approxDf &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; approxDf &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
   group_by&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
   summarise&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;avgVoltage &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; mean&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Voltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; sdVoltage &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; sd&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Voltage&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token percent-operator operator&quot;&gt;%&gt;%&lt;/span&gt;
   arrange&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Temperature&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;Dibujando los resultados&lt;/h2&gt;
+&lt;h3&gt;Dibujando los resultados&lt;/h3&gt;
 &lt;p&gt;Si dibujamos los resultados con el siguiente código, nos queda algo tal que así.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;r&quot;&gt;&lt;pre class=&quot;language-r&quot;&gt;&lt;code class=&quot;language-r&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# Finalmente, dibujamos los resultado.&lt;/span&gt;
 transferFunction &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt;
@@ -232,6 +232,6 @@ show&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;transferFuncti
       /&gt;
   &lt;/a&gt;
     &lt;/span&gt;&lt;/p&gt;
-&lt;h1&gt;Conclusiones&lt;/h1&gt;
+&lt;h2&gt;Conclusiones&lt;/h2&gt;
 &lt;p&gt;Hay otros &lt;em&gt;softwares&lt;/em&gt; que esto te lo hacen automáticamente o en un par de clics, pero cuando no dispones de estos &lt;em&gt;softwares&lt;/em&gt; (como es mi caso), toca hacerlo a mano. En esta entrada hemos visto cómo hacer el promedio de diferentes curvas de caracterización de un sensor, pero es extrapolable a curvas de diferente tipo. De este procesado, aparte de la media, también hemos calculado la desviación estándar. Finalmente, hemos acabado dibujando la curva promedio y el área/intervalo de confianza con un 68.26% de probabilidad o 1σ.&lt;/p&gt;
 &lt;p&gt;Lo importante: aquí tenemos una chuleta de la que echar mano cuando tengamos que promediar curvas 🤣 ¡Nos vemos en la siguiente entrada!&lt;/p&gt;</content:encoded></item></channel></rss>
