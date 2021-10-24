@@ -1,34 +1,13 @@
 import React from "react"
 import { PageProps } from "gatsby"
-import { ChakraProvider } from "@chakra-ui/react"
-import theme from "../../theme/theme"
+import { Container, useTheme } from "@chakra-ui/react"
+import Seo from "../seo"
 import styled from "@emotion/styled"
 import FooterStyled from "../Footer"
 import NavbarStyled from "../Navbar"
 
-const FlexWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-`
-
 const Navbar = styled(NavbarStyled)`
   flex-shrink: 0;
-`
-
-const GlobalWrapper = styled.div`
-  margin: 0 auto;
-  width: 100%;
-  max-width: ${({ theme }) => theme.sizes.container.sm};
-  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[6]};
-  flex: 1 0 auto;
-  &[data-is-root-path="true"] .bio {
-    margin-bottom: ${({ theme }) => theme.space[10]};
-  }
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    /* prettier-ignore */
-    padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[3]};
-  }
 `
 
 const Footer = styled(FooterStyled)`
@@ -38,24 +17,41 @@ const Footer = styled(FooterStyled)`
 type TLayoutProps = {
   location: PageProps["location"]
   title: string
-  children: PageProps["children"]
+  children: React.ReactNode | React.ReactNode[]
 }
 
 const Layout = ({ location, title, children }: TLayoutProps) => {
-  const rootPath = `${__PATH_PREFIX__}/`
-  const isRootPath = location.pathname === rootPath
+  // const rootPath = `${__PATH_PREFIX__}/`
+  // const isRootPath = location.pathname === rootPath
 
+  const theme = useTheme()
   return (
-    <ChakraProvider theme={theme} resetCSS={false}>
-      <title>{title}</title>
-      <FlexWrapper>
-        <Navbar />
-        <GlobalWrapper data-is-root-path={isRootPath}>
-          <main>{children}</main>
-        </GlobalWrapper>
-        <Footer />
-      </FlexWrapper>
-    </ChakraProvider>
+    <Container
+      height="100%"
+      maxW="container.lg"
+      display="flex"
+      flexDirection="column"
+    >
+      <Seo title={title} />
+      <Navbar />
+      <Container
+        maxW="container.md"
+        flex="1 0 auto"
+        margin="0 auto"
+        width="100%"
+        paddingY={{
+          base: theme.space[3],
+          sm: theme.space[3],
+        }}
+        paddingX={{
+          base: theme.space[3],
+          sm: theme.space[6],
+        }}
+      >
+        <main>{children}</main>
+      </Container>
+      <Footer />
+    </Container>
   )
 }
 
