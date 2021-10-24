@@ -1,13 +1,16 @@
 import * as React from "react"
 import { Link, graphql } from "gatsby"
-import Bio from "../components/bio"
+import Bio from "../components/Bio"
 import Layout from "../components/Layout"
 import Seo from "../components/seo"
+import { Box } from "@chakra-ui/layout"
+import { useTheme } from "@chakra-ui/react"
 
-const BlogPostTemplate = ({ data, location }) => {
+const BlogPostTemplate = ({ data, location }: any) => {
   const post = data.markdownRemark
   const siteTitle = data.site.siteMetadata?.title || `Title`
   const { previous, next } = data
+  const theme = useTheme()
 
   return (
     <Layout location={location} title={siteTitle}>
@@ -31,9 +34,9 @@ const BlogPostTemplate = ({ data, location }) => {
           dangerouslySetInnerHTML={{ __html: post.html }}
           itemProp="articleBody"
         />
-        <div style={{ marginTop: "24px" }}>
+        <Box my={theme.space[10]}>
           <Bio />
-        </div>
+        </Box>
       </article>
       <nav className="blog-post-nav">
         <ul

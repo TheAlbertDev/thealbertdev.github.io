@@ -4,9 +4,11 @@ import Layout from "../components/Layout"
 import { Tag } from "@chakra-ui/tag"
 import styled from "@emotion/styled"
 import Seo from "../components/seo"
-import Bio from "../components/bio"
+import Bio from "../components/Bio"
 import LinkIcon from "../images/link-icon.svg"
+import { Box } from "@chakra-ui/layout"
 import publications from "../../static/publications.json"
+import { useTheme } from "@chakra-ui/react"
 
 const InformationSource = styled.span`
   font-family: ${({ theme }) => theme.fonts.heading};
@@ -87,10 +89,13 @@ const Publications = ({
   location: PageProps["location"]
 }) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
+  const theme = useTheme()
   return (
     <Layout location={location} title={siteTitle}>
       <Seo title="Todas las publicaciones" />
-      <Bio />
+      <Box my={theme.space[10]}>
+        <Bio />
+      </Box>
       <InformationSource>
         &#9432; Información obtenida de{" "}
         <a

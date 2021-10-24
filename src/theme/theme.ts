@@ -3,14 +3,14 @@ import { extendTheme } from "@chakra-ui/react"
 import styles from "./styles"
 import fonts from "./fonts"
 import config from "./config"
+import colors from "./colors"
 
-const theme = extendTheme({
+const theme = {
   styles,
   fonts,
   config,
-})
-
-type Theme = typeof theme
-
-export type { Theme }
-export default theme
+  colors,
+  components: {},
+}
+export const Theme = typeof extendTheme(theme)
+export default extendTheme(theme)

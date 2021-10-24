@@ -6,7 +6,7 @@ const styles = {
       height: "100%",
     },
     body: {
-      bg: mode("gray.100", "#202023")(props),
+      bg: mode("gray.100", "bgColor")(props),
       color: "whiteAlpha.900",
     },
     "h1,h2,h3,h4,h5,h6": {

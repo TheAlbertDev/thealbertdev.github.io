@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, graphql } from "gatsby"
-import Bio from "../components/bio"
+import Bio from "../components/Bio"
 import Layout from "../components/Layout"
 import Seo from "../components/seo"
 import { Box, Text } from "@chakra-ui/layout"
@@ -10,11 +10,10 @@ const BlogIndex = ({ data, location }) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
   const posts = data.allMarkdownRemark.nodes
   const theme = useTheme()
-
   return (
     <Layout location={location} title={siteTitle}>
       <Seo title="Todas las entradas" />
-      <Box mb={theme.space[10]}>
+      <Box my={theme.space[10]}>
         <Bio />
       </Box>
       <ol style={{ listStyle: `none` }}>
