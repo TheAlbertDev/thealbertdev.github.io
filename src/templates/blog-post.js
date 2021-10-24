@@ -3,7 +3,6 @@ import { Link, graphql } from "gatsby"
 import Bio from "../components/bio"
 import Layout from "../components/Layout"
 import Seo from "../components/seo"
-import Hr from "../components/Hr"
 
 const BlogPostTemplate = ({ data, location }) => {
   const post = data.markdownRemark
@@ -32,7 +31,6 @@ const BlogPostTemplate = ({ data, location }) => {
           dangerouslySetInnerHTML={{ __html: post.html }}
           itemProp="articleBody"
         />
-        <Hr />
         <div style={{ marginTop: "24px" }}>
           <Bio />
         </div>
