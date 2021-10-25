@@ -1,9 +1,28 @@
 import React from "react"
-import { StaticImage } from "gatsby-plugin-image"
-import { Flex, Box, Text } from "@chakra-ui/layout"
+import { Image } from "@chakra-ui/react"
+import { Flex, Text } from "@chakra-ui/layout"
 import { Tag } from "@chakra-ui/react"
+import { useStaticQuery, graphql } from "gatsby"
 
 const Bio = () => {
+  const ProfilePicture = useStaticQuery(graphql`
+    {
+      allFile(
+        filter: {
+          sourceInstanceName: { eq: "images" }
+          name: { eq: "profile-pic" }
+        }
+      ) {
+        nodes {
+          childImageSharp {
+            fluid {
+              src
+            }
+          }
+        }
+      }
+    }
+  `)
   return (
     <Flex
       direction={{ base: "column", md: "row" }}
@@ -54,21 +73,18 @@ const Bio = () => {
           ))}
         </Flex>
       </Flex>
-      <Box
-        flexShrink={0}
-        borderRadius="full"
-        boxSize={100}
-        overflow="hidden"
-        borderColor="white"
-        borderWidth={2}
+      <Image
         order={{ base: 1, md: 3 }}
-      >
-        <StaticImage
-          src="../../images/profile-pic.jpeg"
-          alt="Albert picture"
-          imgStyle={{ borderRadius: "100%" }}
-        />
-      </Box>
+        flexShrink={0}
+        borderColor="whiteAlpha.800"
+        borderWidth={2}
+        borderStyle="solid"
+        maxWidth="100px"
+        display="inline-block"
+        borderRadius="full"
+        alt="Profile image"
+        src={ProfilePicture.allFile.nodes[0].childImageSharp.fluid.src}
+      />
     </Flex>
   )
 }
