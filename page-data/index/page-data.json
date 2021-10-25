@@ -2,4 +2,4 @@
     "componentChunkName": "component---src-pages-index-js",
     "path": "/",
     "result": {"data":{"site":{"siteMetadata":{"title":"TheAlbert.Dev"}},"allMarkdownRemark":{"nodes":[{"excerpt":"No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hacer muy habitualmente. Hablo de hacer el promedio de curvas o…","fields":{"slug":"/blog/promedio-de-curvas-en-r/"},"frontmatter":{"date":"febrero 05, 2021","title":"Promedio de curvas en R","description":"Tutorial para realizar el promedio de diferentes cruvas o series de datos en R."}}]}},"pageContext":{}},
-    "staticQueryHashes": ["2841359383"]}
+    "staticQueryHashes": ["1112205340","2841359383"]}
