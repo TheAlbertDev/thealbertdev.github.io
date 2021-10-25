@@ -47,7 +47,7 @@ const Bio = () => {
               key={index}
               variant="solid"
               bg="teal.200"
-              color="bgColor"
+              color="var(--chakra-colors-bgColor)"
             >
               {job}
             </Tag>
