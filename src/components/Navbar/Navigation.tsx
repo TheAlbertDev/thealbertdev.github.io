@@ -1,50 +1,54 @@
 import React from "react"
-import styled from "@emotion/styled"
+import { useTheme } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/layout"
 import { Link } from "gatsby"
-
-const NAV = styled.nav`
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.light};
-`
-
-const UL = styled.ul`
-  margin: 0;
-  text-align: right;
-`
-
-const LI = styled.li`
-  display: inline-block;
-  margin: 0;
-  & a {
-    text-decoration: none;
-    color: ${({ theme }) => theme.colors.white};
-    transition: opacity 0.2s ease-in-out;
-    &:hover {
-      opacity: 0.5;
-    }
-  }
-
-  &:not(:first-of-type) {
-    margin-left: ${({ theme }) => theme.space[2]};
-  }
-`
 
 type TNavigation = {
   pages: Array<{ text: string; to: string }>
 }
 
 const Navigation = (props: TNavigation) => {
+  const theme = useTheme()
+
   const NavigationPages = props.pages.map((page, index) => (
-    <LI key={index}>
+    <li key={index}>
       <Link to={page.to}>{page.text}</Link>
-    </LI>
+    </li>
   ))
 
   return (
-    <NAV>
-      <UL>{NavigationPages}</UL>
-    </NAV>
+    <Box
+      sx={{
+        nav: {
+          fontFamily: theme.fonts.heading,
+          fontSize: theme.fontSizes.md,
+          fontWeight: theme.fontWeights.light,
+        },
+        ul: {
+          margin: 0,
+          textAlign: "right",
+        },
+        li: {
+          display: "inline-block",
+          margin: 0,
+          a: {
+            textDecoration: "none",
+            color: theme.colors.white,
+            transition: "opacity 0.2s ease-in-out",
+            "&:hover": {
+              opacity: 0.5,
+            },
+          },
+          "&:not(:first-of-type)": {
+            marginLeft: theme.space[2],
+          },
+        },
+      }}
+    >
+      <nav>
+        <ul>{NavigationPages}</ul>
+      </nav>
+    </Box>
   )
 }
 

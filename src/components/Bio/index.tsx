@@ -1,6 +1,6 @@
 import React from "react"
 import { StaticImage } from "gatsby-plugin-image"
-import { Flex, Box, Text, HStack } from "@chakra-ui/layout"
+import { Flex, Box, Text } from "@chakra-ui/layout"
 import { Tag } from "@chakra-ui/react"
 
 const Bio = () => {

@@ -1,18 +1,10 @@
 import React from "react"
 import { PageProps } from "gatsby"
+import { Box } from "@chakra-ui/layout"
 import { Container, useTheme } from "@chakra-ui/react"
 import Seo from "../seo"
-import styled from "@emotion/styled"
-import FooterStyled from "../Footer"
-import NavbarStyled from "../Navbar"
-
-const Navbar = styled(NavbarStyled)`
-  flex-shrink: 0;
-`
-
-const Footer = styled(FooterStyled)`
-  flex-shrink: 0;
-`
+import Footer from "../Footer"
+import Navbar from "../Navbar"
 
 type TLayoutProps = {
   location: PageProps["location"]
@@ -33,7 +25,9 @@ const Layout = ({ location, title, children }: TLayoutProps) => {
       flexDirection="column"
     >
       <Seo title={title} />
-      <Navbar />
+      <Box flexShrink={0}>
+        <Navbar />
+      </Box>
       <Container
         maxW="container.md"
         flex="1 0 auto"
@@ -50,7 +44,10 @@ const Layout = ({ location, title, children }: TLayoutProps) => {
       >
         <main>{children}</main>
       </Container>
-      <Footer />
+
+      <Box flexShrink={0}>
+        <Footer />
+      </Box>
     </Container>
   )
 }
