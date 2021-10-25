@@ -1,18 +1,5 @@
 import React from "react"
-import styled from "@emotion/styled"
-
-const A = styled.a`
-  &:hover {
-    & svg {
-      opacity: 0.3;
-    }
-  }
-  & svg {
-    fill: ${({ theme }) => theme.colors.white};
-    opacity: 0.5;
-    transition: opacity 0.2s ease-in-out;
-  }
-`
+import { Box, useTheme } from "@chakra-ui/react"
 
 type TSocialNetworkProp = {
   to: string
@@ -20,10 +7,31 @@ type TSocialNetworkProp = {
 }
 
 const SocialNetwork = (props: TSocialNetworkProp) => {
+  const theme = useTheme()
   return (
-    <A href={props.to} target="_blank" rel="noopener noreferrer nofollow">
-      {props.svg}
-    </A>
+    <Box
+      sx={{
+        "a:hover": {
+          svg: {
+            opacity: 0.3,
+          },
+        },
+        svg: {
+          fill: theme.colors.white,
+          opacity: 0.5,
+          transition: "opacity 0.2s ease-in-out",
+        },
+      }}
+    >
+      <a
+        href={props.to}
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+        style={{}}
+      >
+        {props.svg}
+      </a>
+    </Box>
   )
 }
 

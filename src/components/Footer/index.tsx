@@ -1,33 +1,28 @@
 import React from "react"
-import styled from "@emotion/styled"
+import { Flex } from "@chakra-ui/layout"
+import { useTheme } from "@chakra-ui/react"
 import Copyright from "./Copyright"
 import SocialNetworks from "./SocialNetworks"
 
-const Footer = styled.footer`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: center;
-  align-content: center;
-  margin: 0 ${({ theme }) => theme.space[6]};
-  padding: ${({ theme }) => theme.space[6]} 0;
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    flex-direction: column;
-    justify-content: center;
-    gap: ${({ theme }) => theme.space[1]};
-  }
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    margin: 0 ${({ theme }) => theme.space[3]};
-  }
-`
-
 const FooterStyled = () => {
+  const theme = useTheme()
   return (
-    <Footer>
+    <Flex
+      as="footer"
+      flexDirection={{ base: "column", lg: "row" }}
+      flexWrap="nowrap"
+      justifyContent={{ base: "center", lg: "space-between" }}
+      gridGap={theme.space[1]}
+      alignItems="center"
+      alignContent="center"
+      marginY={0}
+      marginX={{ base: theme.space[3], lg: theme.space[6] }}
+      paddingX={0}
+      paddingY={theme.space[6]}
+    >
       <Copyright />
       <SocialNetworks />
-    </Footer>
+    </Flex>
   )
 }
 

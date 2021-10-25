@@ -1,6 +1,6 @@
 import React from "react"
-import styled from "@emotion/styled"
-import { useTheme } from "@emotion/react"
+import { useTheme } from "@chakra-ui/react"
+import { Flex } from "@chakra-ui/layout"
 import SocialNetwork from "./SocialNetwork"
 import GitHubIcon from "../../images/github-icon.svg"
 import TwitterIcon from "../../images/twitter-icon.svg"
@@ -8,19 +8,12 @@ import LinkedinIcon from "../../images/linkedin-icon.svg"
 import InstagramIcon from "../../images/instagram-icon.svg"
 import YoutubeIcon from "../../images/youtube-icon.svg"
 
-const Div = styled.div`
-  flex-grow: 0;
-  display: flex;
-  justify-content: center;
-  gap: ${({ theme }) => theme.space[2]};
-`
-
 const iconHeightWidth = 7
 
 const SocialNetworks = () => {
   const theme = useTheme()
   return (
-    <Div>
+    <Flex flexGrow={0} justifyContent="center" gap={theme.space[2]}>
       <SocialNetwork
         to="https://github.com/TheAlbertDev"
         svg={
@@ -66,7 +59,7 @@ const SocialNetworks = () => {
           />
         }
       />
-    </Div>
+    </Flex>
   )
 }
 

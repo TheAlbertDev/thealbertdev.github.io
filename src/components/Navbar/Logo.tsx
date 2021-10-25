@@ -1,13 +1,6 @@
 import React from "react"
-import styled from "@emotion/styled"
+import { Box } from "@chakra-ui/layout"
 import { Link } from "gatsby"
-
-const LinkStyled = styled(Link)`
-  width: 167px;
-  svg {
-    fill: white;
-  }
-`
 
 type TLogo = {
   to: string
@@ -15,7 +8,20 @@ type TLogo = {
 }
 
 const Logo = (props: TLogo) => {
-  return <LinkStyled to={props.to}>{props.logoSVG}</LinkStyled>
+  return (
+    <Box
+      sx={{
+        a: {
+          width: "175px",
+        },
+        svg: {
+          fill: "white",
+        },
+      }}
+    >
+      <Link to={props.to}>{props.logoSVG}</Link>
+    </Box>
+  )
 }
 
 export default Logo
