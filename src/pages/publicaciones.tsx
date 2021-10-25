@@ -112,8 +112,11 @@ const Publications = ({
             ).replace("-", " ")
 
             let publicationDate
-            let dateOptions: { year?: string; month?: string; day?: string } =
-              {}
+            let dateOptions: {
+              year?: "numeric" | "2-digit"
+              month?: "short" | "numeric" | "2-digit" | "long" | "narrow"
+              day?: "numeric" | "2-digit"
+            } = {}
 
             if (work.publicationDate.year === null) {
               publicationDate = null
@@ -138,14 +141,12 @@ const Publications = ({
               dateOptions.day = "numeric"
             }
 
-            const publicationDateString = publicationDate.toLocaleDateString(
-              "es-ES",
-              dateOptions
-            )
+            const publicationDateString: string | undefined =
+              publicationDate?.toLocaleDateString("es-ES", dateOptions)
 
             return (
               <li key={index}>
-                <Tag size="sm" colorScheme="teal">
+                <Tag size="sm" colorScheme="teal" variant="subtle">
                   {publicationType}
                 </Tag>
                 <PublicationLink doi={work.doi}>
@@ -157,10 +158,12 @@ const Publications = ({
                   {work.journalTitle}
                 </Text>{" "}
                 |{" "}
-                <Text as="span" mb={theme.space[1]}>
-                  {publicationDateString.charAt(0).toUpperCase() +
-                    publicationDateString.slice(1)}
-                </Text>
+                {publicationDateString && (
+                  <Text as="span" mb={theme.space[1]}>
+                    {publicationDateString.charAt(0).toUpperCase() +
+                      publicationDateString.slice(1)}
+                  </Text>
+                )}
                 <Text mb={theme.space[1]} style={{ textIndent: 0 }}>
                   {work.authors.join(", ")}
                 </Text>
