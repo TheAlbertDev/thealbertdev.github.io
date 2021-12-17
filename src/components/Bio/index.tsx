@@ -60,14 +60,7 @@ const Bio = () => {
             "Educador",
             "Papi molón 😎",
           ].map((job, index) => (
-            <Tag
-              whiteSpace="nowrap"
-              size="md"
-              key={index}
-              variant="solid"
-              bg="teal.200"
-              color="var(--chakra-colors-bgColor)"
-            >
+            <Tag whiteSpace="nowrap" size="md" key={index}>
               {job}
             </Tag>
           ))}
