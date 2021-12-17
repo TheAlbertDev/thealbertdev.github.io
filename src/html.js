@@ -22,7 +22,7 @@ export default function HTML(props) {
       </head>
       <body {...props.bodyAttributes}>
         {props.preBodyComponents}
-        {/* <ColorModeScript initialColorMode="dark" key="chakra-ui-no-flash" /> */}
+        <ColorModeScript initialColorMode="dark" key="chakra-ui-no-flash" />
         <div
           key={`body`}
           id="___gatsby"
