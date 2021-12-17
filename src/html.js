@@ -14,7 +14,7 @@ export default function HTML(props) {
         />
         {props.headComponents}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link
           href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;700&display=swap"
           rel="stylesheet"
@@ -22,7 +22,7 @@ export default function HTML(props) {
       </head>
       <body {...props.bodyAttributes}>
         {props.preBodyComponents}
-        <ColorModeScript initialColorMode="dark" key="chakra-ui-no-flash" />
+        {/* <ColorModeScript initialColorMode="dark" key="chakra-ui-no-flash" /> */}
         <div
           key={`body`}
           id="___gatsby"

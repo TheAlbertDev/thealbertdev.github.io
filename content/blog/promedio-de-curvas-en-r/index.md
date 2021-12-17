@@ -8,7 +8,7 @@ No es la primera vez que he necesitado hacerlo, pero no es algo que necesite hac
 
 En esta entrada, vamos a ver cómo hacer con R ese promedio de sets de datos y cómo extraer otras estadísticas como su desviación estándar.
 
-## Para qué queremos un promedio de curvas
+# Para qué queremos un promedio de curvas
 
 Pues vamos a imaginarnos el siguiente supuesto. Tenemos un sensor que queremos caracterizar. Para ello, cogemos, no solo este sensor, sino muchos, y realizamos múltiples mediciones mientras vamos variando de manera controlada la magnitud que miden. Por ejemplo, vamos a caracterizar un [sensor de temperatura RTD](https://es.wikipedia.org/wiki/RTD), una resistencia cuyo valor varía en función de la temperatura. Un ejemplo de circuito para medir esa variación de resistencia es un [puente de Wheatstone](https://es.wikipedia.org/wiki/Puente_de_Wheatstone).
 
@@ -20,13 +20,13 @@ Para este ejemplo, he simulado en SPICE una serie de mediciones para una PT100, 
 
 Huelga decirlo, en un caso real los datos los obtendríamos experimentalmente y no mediante una simulación.
 
-## Sets de datos
+# Sets de datos
 
 Antes de ponernos con R, aquí tienes los datos que hemos obtenido ~~de la simulación~~ experimentalmente en la caracterización de nuestro sensor. Cómo verás, tenemos una respuesta que varía según el sensor que utilicemos.
 
 ![Curvas de la función de transferencia](./funcion-de-transferencia.png)
 
-## Promedio de curvas en R
+# Promedio de curvas en R
 
 Ahora sí, vamos en materia. Para empezar, veamos cómo tenemos organizado nuestro _data frame_. Este consiste en tres columnas: _Voltage_, _Temperature_ y _Group_. Las dos primeras son claras; hacen referencia a las tensiones y temperaturas medidas. La tercera columna indica el sensor o curva. Así pues, todas las filas con el mismo grupo corresponden a una curva específica. En este caso tenemos 6 grupos o curvas. Este _data frame_ lo tenemos almacenado en la variable `df`.
 
@@ -34,7 +34,7 @@ Ahora sí, vamos en materia. Para empezar, veamos cómo tenemos organizado nuest
 
 _Data frame_ con los datos experimentales. Solo se muestran las primeras filas u observaciones.
 
-### Homogeneización de la variable independiente
+## Homogeneización de la variable independiente
 
 Lo primero que haremos es algo que justamente ahora no necesitamos porque trabajamos con datos simulados, pero que suele ser común cuando operamos con datos experimentales. Esto es "homogeneizar" la variable independiente (en este caso, la temperatura). ¿Qué quiero decir con esto? En un caso real sería difícil realizar medidas siempre en las mismas temperaturas. En una medida haríamos una medición en 1.7 ºC, 22.5 ºC y 45.9 ºC, y en otra a 1.5 ºC, 25.0 ºC y 44.1 ºC. Pero para hacer la media, necesitamos que haya una medición (voltaje) en cada curva para cada temperatura. Por ello, lo que necesitaríamos hacer es obtener un valor de voltaje para las temperaturas 1.5 ºC, 1.7 ºC, 22.5 ºC, 25.0 ºC, 44.1 ºC y 45.9 ºC para cada uno de los sensores y curvas y, entonces, hacer la media para cada temperatura.
 
@@ -53,7 +53,7 @@ sensors <- seq(1,6)
 approxTemperature <- unique(df$Temperature)
 ```
 
-### Aproximación de la variable dependiente
+## Aproximación de la variable dependiente
 
 Ahora toca que, mediante interpolación, rellenemos esos espacios en blanco entre mediciones para que exista una medida (voltaje) para cada curva/sensor y temperatura.
 
@@ -93,7 +93,7 @@ for(n in 1:length(sensors)) {
 }
 ```
 
-### Promedio y desviación estándar
+## Promedio y desviación estándar
 
 Finalmente, solo queda ir temperatura a temperatura y calcular el promedio y desviación estándar de todas las curvas/sensores.
 
@@ -105,7 +105,7 @@ approxDf <- approxDf %>%
   arrange(Temperature)
 ```
 
-### Dibujando los resultados
+## Dibujando los resultados
 
 Si dibujamos los resultados con el siguiente código, nos queda algo tal que así.
 
@@ -131,7 +131,7 @@ Para poder ver una pequeña comparación entre el antes y el después, podemos d
 
 ![Función de transferencia promedio superpuesta](./funcion-de-transferencia-promedio-superpuesta.png)
 
-## Conclusiones
+# Conclusiones
 
 Hay otros _softwares_ que esto te lo hacen automáticamente o en un par de clics, pero cuando no dispones de estos _softwares_ (como es mi caso), toca hacerlo a mano. En esta entrada hemos visto cómo hacer el promedio de diferentes curvas de caracterización de un sensor, pero es extrapolable a curvas de diferente tipo. De este procesado, aparte de la media, también hemos calculado la desviación estándar. Finalmente, hemos acabado dibujando la curva promedio y el área/intervalo de confianza con un 68.26% de probabilidad o 1σ.
 
