@@ -1,0 +1,37 @@
+title: >-
+  Self-Powered Point-of-Care Device for Galvanic Cell-Based Sample Concentration
+  Measurement
+type: journal
+pubYear: 2021
+pubMonth: 11
+pubDay: 28
+doi: 10.3390/s21082665
+journal: Sensors
+authors:
+  - Albert Álvarez-Carulla
+  - Yaiza Montes-Cebrián
+  - Jordi Colomer-Farrarons
+  - Pere Lluís Miribel-Català
+publisher: MDPI
+volume: 21
+number: 8
+pages: '2665'
+abstract: >
+  A novel self-powered point-of-care low-power electronics approach for galvanic
+  cell-based sample concentration measurement is presented. The electronic
+  system harvests and senses at the same time from the single cell. The system
+  implements a solution that is suitable in those scenarios where extreme low
+  power is generated from the fuel cell. The proposed approach implements a
+  capacitive-based method to perform a non-linear sweep voltammetry to the cell,
+  but without the need to implement a potentiostat amplifier for that purpose.
+  It provides a digital-user readable result without the need for external
+  non-self-powered devices or instruments compared with other solutions. The
+  system conception was validated for a particular case. The scenario consisted
+  of the measurement of a NaCl solution as the electrolyte, which was related to
+  the conductivity of the sample. The electronic reader continuously measured
+  the current with a transfer function gain of 1.012 V mA<sup>−1</sup>. The
+  overall system exhibited a maximum coefficient of variation of 6.1%, which was
+  an improvement compared with the state-of-the-art. The proof of concept of
+  this electronics system was validated with a maximum power consumption of 5.8
+  μW using commercial-off-the-self parts.
+preprint: /preprints/sensors-21-02665-v3.pdf

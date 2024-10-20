@@ -1,0 +1,42 @@
+title: >-
+  Novel Sweat-Based Wearable Device for Advanced Monitoring of Athletic
+  Physiological Biometrics
+type: journal
+pubYear: 2023
+pubMonth: 11
+pubDay: 28
+doi: 10.3390/s23239473
+journal: Sensors
+authors:
+  - Javier Aguilar-Torán
+  - Genis Rabost-Garcia
+  - Samantha Toinga-Villafuerte
+  - Albert Álvarez-Carulla
+  - Valeria Colmena-Rubil
+  - Andrea Fajardo-Garcia
+  - Andrea Cardona-Bonet
+  - Jasmina Casals-Terré
+  - Xavier Muñoz-Pascual
+  - Pere Miribel-Català
+  - Jaime Punter-Villagrasa
+publisher: MDPI
+volume: 23
+number: 23
+pages: '9473'
+abstract: >
+  Blood testing has traditionally been the gold standard for the physiological
+  analysis and monitoring of professional athletes. In recent years, blood
+  testing has moved out of the laboratory thanks to portable handheld devices,
+  such as lactate meters. However, despite its usefulness and widespread use,
+  blood testing has several drawbacks and limitations, such as the need for the
+  athlete to stop exercising for blood extraction and the inability to have data
+  continuously collected. In this scenario, sweat has become an alternative to
+  blood testing because of its rich content of electrolytes and metabolites, as
+  well as small quantities of sugars, proteins, and ions. Nevertheless, there
+  are few devices capable of analyzing this biofluid and providing useful
+  information to users. In this paper, an electronic system designed for the
+  autonomous analysis of sweat electrolytes and metabolites along with heart
+  rate dynamics is presented. This system is part of a novel wearable device
+  tailored for athletes that offers to the user a real-time assessment of their
+  physiological status and performance.
+preprint: /preprints/sensors-23-09473.pdf

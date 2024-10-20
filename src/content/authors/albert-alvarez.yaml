@@ -1,0 +1,17 @@
+name: Albert
+surname: Álvarez Carulla
+image: /img/albert-pic-profile.jpeg
+email: hello@thealbert.dev
+socialMedia:
+  - name: Orcid
+    icon: 'simple-icons:orcid'
+    link: 'https://orcid.org/0000-0001-5293-4487'
+  - name: GitHub
+    icon: 'mdi:github'
+    link: 'https://github.com/TheAlbertDev'
+  - name: X
+    icon: 'fa6-brands:square-x-twitter'
+    link: 'https://x.com/thealbertdev'
+  - name: LinkedIn
+    icon: 'mdi:linkedin'
+    link: 'https://linkedin.com/in/thealbertdev'
