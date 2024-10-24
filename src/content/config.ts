@@ -4,10 +4,20 @@ const postsCollection = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
+    draft: z.boolean().default(true),
+    description: z.string(),
+    category: reference("categories"),
     tags: z.array(z.string()).optional(),
     image: z.string().optional(),
     authors: z.array(z.object({ author: reference("authors") })),
     pubDate: z.date(),
+    translatedPosts: z
+      .array(
+        z.object({
+          translatedPost: reference("posts"),
+        }),
+      )
+      .optional(),
     relatedPosts: z
       .array(
         z.object({
@@ -15,6 +25,13 @@ const postsCollection = defineCollection({
         }),
       )
       .optional(),
+  }),
+});
+
+const categoriesCollection = defineCollection({
+  type: "data",
+  schema: z.object({
+    name: z.string(),
   }),
 });
 
@@ -55,4 +72,5 @@ export const collections = {
   posts: postsCollection,
   authors: authorsCollection,
   publications: publicationsCollection,
+  categories: categoriesCollection,
 };

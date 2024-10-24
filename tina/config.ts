@@ -51,6 +51,11 @@ export default defineConfig({
         label: "Posts",
         path: "src/content/posts",
         format: "mdx",
+        defaultItem: () => {
+          return {
+            draft: true,
+          };
+        },
         ui: {
           filename: {
             readonly: true,
@@ -66,6 +71,30 @@ export default defineConfig({
             label: "Title",
             isTitle: true,
             required: true,
+          },
+          {
+            type: "boolean",
+            name: "draft",
+            label: "Draft",
+            required: true,
+          },
+          {
+            type: "string",
+            name: "description",
+            label: "Description",
+            required: true,
+          },
+          {
+            type: "reference",
+            name: "category",
+            label: "Category",
+            required: true,
+            collections: ["category"],
+            ui: {
+              format: (value) => `src/content/categories/${value}.yaml`,
+              parse: (value) =>
+                `${getFileNameWithoutExtension(getDirName(value))}/${getFileNameWithoutExtension(value)}`,
+            },
           },
           {
             type: "rich-text",
@@ -129,6 +158,30 @@ export default defineConfig({
                 type: "reference",
                 label: "Related Post",
                 name: "relatedPost",
+                collections: ["post"],
+                ui: {
+                  format: (value) => `src/content/posts/${value}.mdx`,
+                  parse: (value) =>
+                    `${getFileNameWithoutExtension(getDirName(value))}/${getFileNameWithoutExtension(value)}`,
+                },
+              },
+            ],
+          },
+          {
+            type: "object",
+            list: true,
+            name: "translatedPosts",
+            label: "Translated posts",
+            ui: {
+              itemProps: (item) => {
+                return { label: `${item?.translatedPost}` };
+              },
+            },
+            fields: [
+              {
+                type: "reference",
+                label: "Translated post",
+                name: "translatedPost",
                 collections: ["post"],
                 ui: {
                   format: (value) => `src/content/posts/${value}.mdx`,
@@ -282,6 +335,29 @@ export default defineConfig({
             isBody: true,
           },
           { type: "string", name: "preprint", label: "Preprint" },
+        ],
+      },
+      {
+        name: "category",
+        label: "Categories",
+        path: "src/content/categories",
+        format: "yaml",
+        ui: {
+          filename: {
+            readonly: true,
+            slugify: (values) => {
+              return values.name?.toLowerCase().replace(/ /g, "-");
+            },
+          },
+        },
+        fields: [
+          {
+            type: "string",
+            name: "name",
+            label: "Name",
+            isTitle: true,
+            required: true,
+          },
         ],
       },
     ],

@@ -1,0 +1,19 @@
+---
+import PostListItem from "./PostListItem.astro";
+import type { CollectionEntry } from "astro:content";
+
+const { posts } = (Astro.props as { posts: CollectionEntry<"posts">[] })!;
+---
+
+<ul>
+  <div class="divider md:hidden"></div>
+  {
+    posts.map((post, idx, arr) => {
+      const elements = [<PostListItem post={post} />];
+      if (idx < arr.length - 1) {
+        elements.push(<div class="divider" />);
+      }
+      return elements;
+    })
+  }
+</ul>

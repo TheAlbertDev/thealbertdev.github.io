@@ -1,0 +1,41 @@
+---
+import {
+  getLangFromUrl,
+  useTranslations,
+  useTranslatedPath,
+} from "../i18n/utils";
+import LanguagePicker from "./LanguagePicker.astro";
+import ThemePicker from "./ThemePicker.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<div class="navbar bg-base-100">
+  <div class="flex-1">
+    <a class="btn btn-ghost text-xl" href={translatePath("/", lang)}
+      ><div>
+        <span class="font-thin">the</span><span>Albert</span><span
+          class="font-thin">Dev</span
+        >
+      </div></a
+    >
+  </div>
+
+  <div class="flex-none">
+    <ul class="menu menu-horizontal px-0">
+      <li>
+        <a href={translatePath("/posts", lang)}>{t("nav.posts")}</a>
+      </li>
+      <li>
+        <a href={translatePath("/about", lang)}>{t("nav.about")}</a>
+      </li>
+      <li>
+        <a href={translatePath("/contact", lang)}>{t("nav.contact")}</a>
+      </li>
+    </ul>
+    <LanguagePicker />
+    <ThemePicker />
+  </div>
+</div>

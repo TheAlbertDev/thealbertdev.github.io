@@ -1,0 +1,71 @@
+---
+import {
+  getLangFromUrl,
+  useTranslations,
+  useTranslatedPath,
+} from "../i18n/utils";
+import { Icon } from "astro-icon/components";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<footer class="footer bg-base-200 text-base-content p-10">
+  <aside>
+    <div class="flex-1">
+      <a class="font-bold text-xl" href={translatePath("/", lang)}
+        ><div>
+          <span class="font-thin">the</span><span>Albert</span><span
+            class="font-thin">Dev</span
+          >
+        </div></a
+      >
+    </div>
+  </aside>
+  <nav>
+    <h6 class="footer-title">{t("footer.nav.title")}</h6>
+    <a class="link link-hover" href={translatePath("/posts", lang)}
+      >{t("nav.posts")}</a
+    >
+    <a class="link link-hover" href={translatePath("/about", lang)}
+      >{t("nav.about")}</a
+    >
+    <a class="link link-hover" href={translatePath("/contact", lang)}
+      >{t("nav.contact")}</a
+    >
+  </nav>
+  <nav>
+    <h6 class="footer-title">{t("footer.social.title")}</h6>
+    <div class="grid grid-flow-col gap-4 group">
+      <a
+        target="_blank"
+        href="https://linkedin.com/in/thealbertdev"
+        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
+      >
+        <Icon name="fa6-brands:linkedin-in" size={24} />
+      </a>
+      <a
+        target="_blank"
+        href="https://github.com/TheAlbertDev"
+        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
+      >
+        <Icon name="fa6-brands:github" size={24} />
+      </a>
+      <a
+        target="_blank"
+        href="https://x.com/thealbertdev"
+        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
+      >
+        <Icon name="fa6-brands:x-twitter" size={24} />
+      </a>
+      <a
+        target="_blank"
+        href="https://orcid.org/0000-0001-5293-4487"
+        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
+      >
+        <Icon name="fa6-brands:orcid" size={24} />
+      </a>
+    </div>
+  </nav>
+</footer>

@@ -3,8 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "tinacms dev -c \"astro dev\"",
-    "start": "astro dev",
+    "dev": "tinacms dev -c \"astro dev --host\"",
+    "start": "astro dev --host",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -12,13 +12,21 @@
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^3.1.8",
+    "@astrojs/tailwind": "^5.1.2",
+    "@iconify-json/fa6-brands": "^1.2.1",
+    "@iconify-json/mdi": "^1.2.1",
+    "@iconify-json/tabler": "^1.2.5",
+    "@iconify/json": "^2.2.261",
     "astro": "^4.16.6",
+    "astro-icon": "^1.1.1",
+    "tailwindcss": "^3.4.14",
     "tinacms": "^2.2.9",
     "typescript": "^5.6.3"
   },
   "devDependencies": {
     "@tinacms/cli": "^1.6.9",
     "@types/node": "^22.7.7",
+    "daisyui": "^4.12.13",
     "prettier": "^3.3.3",
     "prettier-plugin-astro": "^0.14.1"
   }

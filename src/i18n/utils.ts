@@ -17,13 +17,12 @@ export function useTranslatedPath(lang: keyof typeof ui) {
   return function translatePath(path: string, l: string = lang) {
     const pathName = path.replaceAll("/", "");
     const hasTranslation =
-      defaultLang !== l &&
       // @ts-ignore
       routes[l] !== undefined &&
       // @ts-ignore
       routes[l][pathName] !== undefined;
     // @ts-ignore
-    const translatedPath = hasTranslation ? "/" + routes[l][pathName] : path;
+    const translatedPath = hasTranslation ? routes[l][pathName] : path;
 
     return !showDefaultLang && l === defaultLang
       ? translatedPath
@@ -62,4 +61,13 @@ export function getRouteFromUrl(url: URL): string | undefined {
   }
 
   return undefined;
+}
+
+export function getPathFromUrl(url: URL): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.pathname + parsedUrl.search + parsedUrl.hash;
+  } catch (error) {
+    return null;
+  }
 }

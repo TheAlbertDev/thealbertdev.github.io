@@ -1,0 +1,38 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<label class="swap swap-rotate btn btn-ghost rounded-btn">
+  <input
+    id="theme-toggle"
+    type="checkbox"
+    class="theme-controller"
+    value="dark"
+  />
+  <Icon name="tabler:sun" class="swap-off" size={22} />
+  <Icon name="tabler:moon" class="swap-on" size={22} />
+</label>
+
+<script is:inline>
+  const theme = (() => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+      return localStorage.getItem("theme");
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+    return "light";
+  })();
+
+  window.localStorage.setItem("theme", theme);
+
+  document.getElementById("theme-toggle").checked = theme === "dark";
+
+  const handleToggleClick = (event) => {
+    localStorage.setItem("theme", event.target.checked ? "dark" : "light");
+  };
+
+  document
+    .getElementById("theme-toggle")
+    .addEventListener("click", handleToggleClick);
+</script>

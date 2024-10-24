@@ -1,17 +1,56 @@
 ---
-import { languages } from "../i18n/ui";
-import { getLangFromUrl, useTranslatedPath } from "../i18n/utils";
+import { defaultLang, languages } from "../i18n/ui";
+import { getEntry, type CollectionEntry } from "astro:content";
+import {
+  getLangFromUrl,
+  useTranslatedPath,
+  getRouteFromUrl,
+  getPathFromUrl,
+} from "../i18n/utils";
+import { Icon } from "astro-icon/components";
 
+const route = getRouteFromUrl(Astro.url);
+const urlPath = getPathFromUrl(Astro.url);
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
+let postSlug = urlPath!;
+postSlug =
+  (postSlug.startsWith("/posts") ? `${defaultLang}/` : "") +
+  urlPath!.replace("/posts", "").slice(1);
+let post = null;
+try {
+  post = await getEntry("posts", postSlug);
+} catch {
+  post = null;
+}
 ---
 
-<ul>
-  {
-    Object.entries(languages).map(([lang, label]) => (
-      <li>
-        <a href={translatePath("/", lang)}>{label}</a>
-      </li>
-    ))
-  }
-</ul>
+<div class="dropdown dropdown-end">
+  <div tabindex="0" role="button" class="btn btn-ghost rounded-btn">
+    <Icon name="mdi:language" size={18} />
+  </div>
+  <ul
+    tabindex="0"
+    class="menu dropdown-content bg-base-100 rounded-box z-[2] mt-4 w-52 p-2 shadow"
+  >
+    {
+      Object.entries(languages).map(([lang, label]) => (
+        <li>
+          <a
+            href={
+              post != null
+                ? post.data.translatedPosts?.find((translatedPost) =>
+                    translatedPost.translatedPost.slug.startsWith(`${lang}/`),
+                  ) != null
+                  ? `${lang === defaultLang ? "" : `/${lang}`}/posts/${post.data.translatedPosts?.find((translatedPost) => translatedPost.translatedPost.slug.startsWith(`${lang}/`))!.translatedPost.slug.split("/")[1]}`
+                  : translatePath(`/`, lang)
+                : translatePath(`/${route ? route : ""}`, lang)
+            }
+          >
+            {label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>

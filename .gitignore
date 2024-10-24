@@ -24,3 +24,5 @@ pnpm-debug.log*
 .idea/
 
 node_modules
+
+public/admin
