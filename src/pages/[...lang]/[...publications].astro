@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import {
+  useTranslations,
+  useTranslatedPath,
+  getLangFromUrl,
+} from "../../i18n/utils";
+import { defaultLang, languages } from "../../i18n/ui";
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => {
+    const translatePath = useTranslatedPath(lang as keyof typeof languages);
+    return {
+      params: {
+        lang: lang !== defaultLang ? lang : undefined,
+        publications: translatePath("publicaciones").split("/").pop(),
+      },
+    };
+  });
+}
+
+const lang = getLangFromUrl(Astro.url);
+
+const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+---
+
+<Layout title={t("publications.title")}>Pedo</Layout>

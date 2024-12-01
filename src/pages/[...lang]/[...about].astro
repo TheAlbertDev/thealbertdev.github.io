@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { languages, defaultLang } from "../../i18n/ui";
+import {
+  getLangFromUrl,
+  useTranslatedPath,
+  useTranslations,
+} from "../../i18n/utils";
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => {
+    const translatePath = useTranslatedPath(lang as keyof typeof languages);
+    return {
+      params: {
+        lang: lang !== defaultLang ? lang : undefined,
+        about: translatePath("acerca-de").split("/").pop(),
+      },
+    };
+  });
+}
+
+const lang = getLangFromUrl(Astro.url);
+
+const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+---
+
+<Layout title={t("nav.contact")}>Hola</Layout>

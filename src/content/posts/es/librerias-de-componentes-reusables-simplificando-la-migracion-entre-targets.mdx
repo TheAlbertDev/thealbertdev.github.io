@@ -1,0 +1,843 @@
+---
+title: "Librerías de Componentes Reusables: Simplificando la Migración entre Targets"
+draft: false
+description: En progreso
+category: es/programación-c
+tags:
+  - firmware
+  - c
+  - development
+image: /img/pexels-arturoaez220-18734769.jpg
+authors:
+  - author: albert-alvarez
+pubDate: 2024-11-29T23:00:00.000Z
+---
+
+Operar con componentes externos al propio microcontrolador o target es lo más habitual en el desarrollo de firmware. Por ello, saber como desarrollar librerías para ellos es primordial. Esas librerías son las que nos permiten interactuar con ellos y poder intercambiar información u ordenes. Sin embargo, no son pocas las veces en las que me encuentro, en legacy code o en código de estudiantes (o no tan estudiantes), que esas interacciones con los componentes se hacen directamente en el código de la aplicación o, aún estando en ficheros aparte, esas interacciones están intrínsecamente ligadas al target.
+
+Veamos un mal ejemplo de desarrollo de librerías para un sensor de temperatura, humedad y presión BME280 de Bosch en una aplicación para un STM32F401RE de STMicroelectronics. En el ejemplo, queremos inicializar el componente y leer la temperatura cada 1 segundo. (En el código de ejemplo vamos a obviar todo el "ruido" que genera STM32CubeMX/IDE, como la inicialización de los diferntes relojes y periféricos, o los comentarios tipo `USER CODE BEGIN` o `USER CODE END`.)
+
+<Code
+  code={`
+  #include "i2c.h"
+  #include <stdint.h>
+
+  int main(void) {
+
+    uint8_t idx = 0;
+    uint8_t tx_buffer[64] = {0};
+    uint8_t rx_buffer[64] = {0};
+    uint16_t dig_temp1 = 0U;
+    int16_t dig_temp2 = 0;
+    int16_t dig_temp3 = 0;
+
+    MX_I2C1_Init();
+
+    tx_buffer[idx++] = 0b10100011;
+
+    HAL_I2C_Mem_Write(&hi2c1, 0x77 << 1U, 0xF4, 1U, tx_buffer, 1U, 200U);
+
+    HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0x88, 1U, rx_buffer, 6U, 200U);
+
+    dig_temp1 = ((uint16_t)rx_buffer[0]) | (((uint16_t)rx_buffer[1]) << 8U);
+
+    dig_temp2 =
+        (int16_t)(((uint16_t)rx_buffer[2]) | (((uint16_t)rx_buffer[3]) << 8U));
+
+    dig_temp3 =
+        (int16_t)(((uint16_t)rx_buffer[4]) | (((uint16_t)rx_buffer[5]) << 8U));
+
+    while (1) {
+
+      float temperature = 0.0f;
+      int32_t adc_temp = 0;
+      int32_t t_fine = 0;
+      float var1 = 0.0;
+      float var2 = 0.0;
+
+      HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0xFA, 1U, rx_buffer, 3U, 200U);
+
+      adc_temp = (int32_t *)((((uint32_t)rx_buffer[0]) << 12U) |
+                            (((uint32_t)rx_buffer[1]) << 4U) |
+                            (((uint32_t)rx_buffer[2]) >> 4U));
+
+      var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
+            ((float)dig_temp2);
+      var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
+              (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
+            ((float)dig_temp3);
+
+      t_fine = (int32_t)(var1 + var2);
+
+      temperature = (float)(((float)t_fine) / 5129.0);
+
+      // Temperature available for the application.
+    }
+  }
+`}
+lang="c"
+meta='title="main.c"'
+/>
+
+Basándonos en este ejemplo, podemos plantearnos una serie de cuestiones: ¿qué ocurre si necesito cambiar de plataforma (ya sea por falta de stock, querer reducir costes, o por simplemente trabajar en otro producto que hace uso del mismo componente)?, ¿qué ocurre si tengo más de un componente del mismo tipo en el sistema?, ¿qué ocurre si en otro producto tengo el mismo componente?, ¿como puedo testear mi desarrollo si aún no dispongo del hardware (situación muy común en el mundo profesional en el que las fases de desarrollo de firmware y hardware se suelen solapar en algunos instantes del proceso)?
+
+En las tres primeras cuestiones la respuesta es editar el código, ya sea por tener que cambiarlo completamente al cambiar de plataforma, por tener que duplicar el código ya existente para poder operar con un componente adicional del mismo tipo, o por tener que implementar el mismo código para el otro proyecto/producto. En la última cuestión, no hay manera de poder testear el código sin disponer del hardware que permita ejecutar el código. Esto implica que solo después de haberse finalizado el hardware podríamos empezar a testear nuestro código y empezar a solucionar errores inherentes al desarrollo de firmware, alargando el tiempo de desarrollo del producto. Esto nos plantea la pregunta que dá origen a este post: ¿es posible desarrollar drivers para componentes que sean independientes de la plataforma y nos permitan su reuso? La respuesta es sí y es lo que veremos en este post.
+
+## Aislando los drivers de la plataforma
+
+Para poder aislar los drivers de una plataforma seguiremos dos reglas: 1) implementaremos los drivers en su propia unidad de compilación, es decir, en su propio archivo, y 2) no habrá niguna referencia a ningúna header o función propia de la plataforma. Haremos un ejemplo implementando una librería sencilla para el BME280. Para empezar, crearemos dentro de nuestro proyecto una carpeta llamada `bme280`. Yo suelo poner las carpetas de los drivers dentro de `Application/lib/`. Dentro de la carpeta `bme280` creamos los ficheros: `bme280.c`, `bme280.h`, y `bme280_interface.h`. Os aclaro ya la duda: no, no se me ha olvidado nombrar el fichero `bme280_interface.c`. Este archivo no formará parte del driver.
+
+El archivo `bme280.h` declará todas las funciones disponibles en nuestro driver para ser llamadas por nuestra aplicación. Por otro lado, el archivo `bme280.c` implementará la definición de esas funciones y otras auxiliares y privadas que pueda contener el driver. ¿Y qué continene el archivo `bme280_interface.h`? Pues bien, nuestro microcontrolador, sea cual sea, necesitará comunicarse con el componente BME280 de un modo u otro. En este caso, el BME280 permite comunicación SPI o I2C. En ambos casos, el sistema debe de poder escribir y leer bytes del componente. El archivo `bme280_interface.h` declara esas funciones para poder ser llamadas desde el driver. La definición de esas funciones será lo único que estará atado a la plataforma en cuestión y será lo único que debamos de editar en caso de migrar el driver a otra plataforma.
+
+## Declaración de la API del driver
+
+Empezamos declarando las funciones disponibles en el driver en el archivo `bme280.h`.
+
+<Code
+  code={`
+  /**
+   * @file BME280.h
+   * @brief Header file for interfacing with the BME280 sensor.
+   *
+   * This file contains the declarations of the functions required to initialize
+   * and interact with the BME280 sensor, which measures temperature, humidity,
+   * and pressure.
+   */
+
+#ifndef BME280*H*
+#define BME280*H*
+
+/\*\*
+
+- @brief Initializes the BME280 sensor.
+-
+- This function configures the BME280 sensor for operation. It must be called
+- before any other interaction with the sensor.
+  \*/
+  void BME280_init(void);
+
+/\*\*
+
+- @brief Gets the current temperature from the BME280 sensor.
+-
+- This function retrieves the temperature value measured by the BME280 sensor.
+-
+- @return The temperature in degrees Celsius.
+  \*/
+  float BME280_get_temperature(void);
+
+#endif // BME280*H*
+`}
+lang="c"
+meta='title="bme280.h"'
+/>
+
+Como buenos desarrolladores, incluímos documentación a las declaraciones para facilitar su uso. (Hoy en día con la IA no hay excusa para no documentar tu código.) El driver que estamos haciendo será muy simplificado y solo implementaremos una función de inicialiciación sencilla y otra para obtener una medida de temperatura. Ahora vamos a implementar las funciones en el archivo `bme280.c`.
+
+## Implementación de la API del driver
+
+El esqueleto del archivo `bme280.c` sería el siguiente:
+
+<Code
+  code={`
+  void BME280_init(void) {
+    
+  }
+
+float BME280_get_temperature(void) {
+
+}
+`}
+meta='title="bme280.c"'
+lang="c"
+/>
+
+Vamos a centrarnos en la inicialización. Como hemos comentado antes, el BME280 permite comunicación I2C y SPI. En ambos casos, debemos de inicializar el periférico pertinente del microcontrolador (I2C o SPI) y posteriormente debemos de poder enviar y recibir bytes a través de ellos. Suponiendo que usamos comunicación I2C, en el STM32F401RE sería:
+
+<Code
+  code={`
+  void BME280_init(void) {
+    MX_I2C1_Init();
+  }
+
+float BME280_get_temperature(void) {
+
+}
+`}
+meta='title="bme280.c" ins={2} collapse={4-7}'
+lang="c"
+/>
+
+Una vez inicializado el periférico, debemos de inicializar el componente. Ahí deberemos de hacer uso de la información provisto por el fabricante en su [datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/). Ya os hago yo un resumen: se debe de iniciar el canal de muestreo de la temperatura (que está en sleep por defecto) y leer unas constantes de calibración del componente guardas en su ROM y que necesitaremos más adelante para poder calcular la temperatura. (El objetivo del post no es aprender a usar el BME280, por lo que me saltaré detalles de su uso que podéis ver su datasheet.) La inicialización quedaría del siguiente modo:
+
+<Code
+  code={`
+  #include "i2c.h"
+  #include <stdint.h>
+
+#define BME280_TX_BUFFER_SIZE 32U
+#define BME280_RX_BUFFER_SIZE 32U
+#define BME280_TIMEOUT 200U
+#define BME280_ADDRESS 0x77
+#define BME280_REG_CTRL_MEAS 0xF4
+#define BME280_REG_DIG_T 0x88
+
+static uint16_t dig_temp1 = 0U;
+static int16_t dig_temp2 = 0;
+static int16_t dig_temp3 = 0;
+
+void BME280_init(void) {
+uint8_t idx = 0;
+uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+
+    MX_I2C1_Init();
+
+    tx_buffer[idx++] = 0b10100011;
+
+    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+
+    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
+                              rx_buffer, 6U, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+
+    dig_temp1 = ((uint16_t)rx_buffer[0]);
+    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+
+    dig_temp2 = ((int16_t)rx_buffer[2]);
+    dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
+
+    dig_temp3 = ((int16_t)rx_buffer[4]);
+    dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
+
+    return;
+
+}
+
+float BME280_get_temperature(void) {
+
+}
+`}
+meta='title="bme280.c" ins={1-14, 16-21, 23-47} collapse={49-52}'
+lang="c"
+/>
+
+Detallitos a comentar. El valor de calibración que leemos lo guardamos en unas variables llamadas `dig_temp1`, `dig_temp2` y `dig_temp3`. Esas variables están declaradas como globales para que estén disponibles luego para el resto de funciones del driver. Sin embargo, están declaradas como estáticas para que solo estén accesibles dentro del driver. Nadie fuera del driver necesita tener acceso a esos valores ni debe de poder modificarlos.
+
+También vemos que se comprueba el valor devuelto por las instrucciones de I2C y en el caso de algún fallo detenmos la ejecución de la función. No está mal, pero es mejorable. ¿No estaría mejor notificar al que ha llamado a la función `BME280_init` que algo no ha ido bien si ha sido el caso? Para ello, en el archivo `bme280.h` definimos el siguiente `enum`. (Yo los hago utilizando `typedef`. Hay debate sobre el uso de los `typedef` ya que permiten mejorar la legibilidad del código a costa de ocultar detalles. Es cuestión de gustos.)
+
+<Code
+  code={`
+  /**
+   * @file BME280.h
+   * @brief Header file for interfacing with the BME280 sensor.
+   *
+   * This file contains the declarations of the functions required to initialize
+   * and interact with the BME280 sensor, which measures temperature, humidity,
+   * and pressure.
+   */
+
+#ifndef BME280*H*
+#define BME280*H*
+
+/\*\*
+
+- @enum BME280_Status_t
+- @brief Status codes for the BME280 sensor operations.
+-
+- This enumeration defines the possible return statuses for operations
+- involving the BME280 sensor.
+  _/
+  typedef enum {
+  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
+  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
+  } BME280_Status_t;
+
+/\*\*
+
+- @brief Initializes the BME280 sensor.
+-
+- This function configures the BME280 sensor for operation. It must be called
+- before any other interaction with the sensor.
+  \*/
+  void BME280_init(void);
+
+/\*\*
+
+- @brief Gets the current temperature from the BME280 sensor.
+-
+- This function retrieves the temperature value measured by the BME280 sensor.
+-
+- @return The temperature in degrees Celsius.
+  \*/
+  float BME280_get_temperature(void);
+
+#endif // BME280*H*
+`}
+meta='title="bme280.h" ins={13-23} collapse={1-12, 25-42}'
+lang="c"
+/>
+
+Dos apuntes: suelo añadir el sufijo `_t` a los typedefs para indicar que son un typedef, y los valores o miembros del typedef les añado el prefijo del propio typedef, en este caso `BME280_Status_`. Esto último es para evitar la colisión entre enums de diferentes librerías. Si todo el mundo usara como enum `OK`, estaríamos en problemas.
+
+Ya podemos modificar tanto la declariación (`bme280.h`) como la definición (`bme280.c`) de la función `BME280_init` para devolver un status. La versión final de nuestra función sería:
+
+<Code
+  code={`
+  /**
+   * @file BME280.h
+   * @brief Header file for interfacing with the BME280 sensor.
+   *
+   * This file contains the declarations of the functions required to initialize
+   * and interact with the BME280 sensor, which measures temperature, humidity,
+   * and pressure.
+   */
+
+#ifndef BME280*H*
+#define BME280*H*
+
+/\*\*
+
+- @enum BME280_Status_t
+- @brief Status codes for the BME280 sensor operations.
+-
+- This enumeration defines the possible return statuses for operations
+- involving the BME280 sensor.
+  _/
+  typedef enum {
+  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
+  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
+  } BME280_Status_t;
+
+/\*\*
+
+- @brief Initializes the BME280 sensor.
+-
+- This function sets up the BME280 sensor for operation by configuring the necessary
+- settings and parameters. It must be called before any other BME280 functions are used.
+-
+- @return BME280_Status_t Returns the status of the initialization process.
+-                         Possible values are:
+-                         - BME280_OK: Initialization was successful.
+-                         - BME280_ERROR: An error occurred during initialization.
+  \*/
+  void BME280_init(void);
+  BME280_Status_t BME280_init(void);
+
+/\*\*
+
+- @brief Gets the current temperature from the BME280 sensor.
+-
+- This function retrieves the temperature value measured by the BME280 sensor.
+-
+- @return The temperature in degrees Celsius.
+  \*/
+  float BME280_get_temperature(void);
+
+#endif // BME280*H*
+`}
+meta='title="bme280.h" ins={31-35, 37} del={36} collapse={1-24, 38-48}'
+lang="c"
+/>
+
+<br />
+
+<Code
+  code={`
+  #include "bme280.h"
+  #include "i2c.h"
+  #include <stdint.h>
+
+#define BME280_TX_BUFFER_SIZE 32U
+#define BME280_RX_BUFFER_SIZE 32U
+#define BME280_TIMEOUT 200U
+#define BME280_ADDRESS 0x77
+#define BME280_REG_CTRL_MEAS 0xF4
+#define BME280_REG_DIG_T 0x88
+
+static uint16_t dig_temp1 = 0U;
+static int16_t dig_temp2 = 0;
+static int16_t dig_temp3 = 0;
+
+void BME280_init(void) {
+uint8_t idx = 0;
+uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+
+    MX_I2C1_Init();
+
+    tx_buffer[idx++] = 0b10100011;
+
+    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+      return BME280_Status_Err;
+
+    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
+                              rx_buffer, 6U, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+      return BME280_Status_Err;
+
+    dig_temp1 = ((uint16_t)rx_buffer[0]);
+    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+
+    dig_temp2 = ((int16_t)rx_buffer[2]);
+    dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
+
+    dig_temp3 = ((int16_t)rx_buffer[4]);
+    dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
+
+    return;
+    return BME_Status_Ok;
+
+}
+
+float BME280_get_temperature(void) {
+
+}
+`}
+meta='title="bme280.c" ins={1, 32, 39, 51} del={31, 38, 50} collapse={5-15, 17-25, 41-49, 53-56}'
+lang="c"
+/>
+
+Puesto que utilizamos el enum de status, debemos incluir el fichero `bme280.h` en el archivo `bme280.c`. Ya hemos inicializado el driver. Ahora vamos hacer la función para obtener la temperatura. Tendría el siguiente aspecto:
+
+<Code
+  code={`
+  #include "bme280.h"
+  #include "i2c.h"
+  #include <stdint.h>
+
+#define BME280_TX_BUFFER_SIZE 32U
+#define BME280_RX_BUFFER_SIZE 32U
+#define BME280_TIMEOUT 200U
+#define BME280_ADDRESS 0x77
+#define BME280_REG_CTRL_MEAS 0xF4
+#define BME280_REG_DIG_T 0x88
+#define BME280_REG_TEMP 0xFA
+
+static uint16_t dig_temp1 = 0U;
+static int16_t dig_temp2 = 0;
+static int16_t dig_temp3 = 0;
+
+void BME280_init(void) {
+uint8_t idx = 0;
+uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+
+    MX_I2C1_Init();
+
+    tx_buffer[idx++] = 0b10100011;
+
+    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+
+    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
+                              rx_buffer, 6U, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+
+    dig_temp1 = ((uint16_t)rx_buffer[0]);
+    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+
+    dig_temp2 = ((int16_t)rx_buffer[2]);
+    dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
+
+    dig_temp3 = ((int16_t)rx_buffer[4]);
+    dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
+
+    return;
+
+}
+
+float BME280_get_temperature(void) {
+BME280_Status_t BME280_get_temperature(float \*temperature) {
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+int32_t adc_temp = 0;
+int32_t t_fine = 0;
+float var1 = 0.0;
+float var2 = 0.0;
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+
+    *temperature = 0.0f;
+
+    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_TEMP, 1U,
+                              rx_buffer, 3U, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return BME280_Status_Err;
+
+    adc_temp = ((int32_t)rx_buffer[0]) << 12U;
+    adc_temp = adc_temp | (((int32_t)rx_buffer[1]) << 4U);
+    adc_temp = adc_temp | (((int32_t)rx_buffer[2]) >> 4U);
+
+    var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
+          ((float)dig_temp2);
+    var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
+            (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
+          ((float)dig_temp3);
+
+    t_fine = (int32_t)(var1 + var2);
+
+    *temperature = (float)(((float)t_fine) / 5129.0);
+
+    return BME280_Status_Ok;
+
+}
+`}
+meta='title="bme280.c" ins={11, 51-82} del={50} collapse={1-10, 12-48}'
+lang="c"
+/>
+
+Te has dado cuenta, eh. Hemos modificado la firma de la función para que devuelva un status (para saber si ha habido problemas de comunicación con el componente o no) y el resultado lo devolvemos a través del puntero pasado como parámetro a la función. Si estás siguiendo el ejemplo, recuerda de modificar la declaración de la función en el archivo `bme280.h` para que sean iguales.
+
+<Code
+  code={`
+  /**
+   * @file BME280.h
+   * @brief Header file for interfacing with the BME280 sensor.
+   *
+   * This file contains the declarations of the functions required to initialize
+   * and interact with the BME280 sensor, which measures temperature, humidity,
+   * and pressure.
+   */
+
+#ifndef BME280*H*
+#define BME280*H*
+
+/\*\*
+
+- @enum BME280_Status_t
+- @brief Status codes for the BME280 sensor operations.
+-
+- This enumeration defines the possible return statuses for operations
+- involving the BME280 sensor.
+  _/
+  typedef enum {
+  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
+  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
+  } BME280_Status_t;
+
+/\*\*
+
+- @brief Initializes the BME280 sensor.
+-
+- This function sets up the BME280 sensor for operation by configuring the necessary
+- settings and parameters. It must be called before any other BME280 functions are used.
+-
+- @return BME280_Status_t Returns the status of the initialization process.
+-                         Possible values are:
+-                         - BME280_OK: Initialization was successful.
+-                         - BME280_ERROR: An error occurred during initialization.
+  \*/
+  void BME280_init(void);
+  BME280_Status_t BME280_init(void);
+
+/\*\*
+
+- @brief Gets the current temperature from the BME280 sensor.
+-
+- This function retrieves the temperature value measured by the BME280 sensor.
+-
+- @return The temperature in degrees Celsius.
+  \*/
+- @param[out] temperature Pointer to a float where the temperature value will be stored.
+- @return BME280_Status_t Status of the operation. Returns BME280_OK if successful,
+-         otherwise returns an error code.
+  */
+  float BME280_get_temperature(void);
+  BME280_Status_t BME280_get_temperature(float *temperature);
+
+#endif // BME280*H*
+`}
+meta='title="bme280.h" ins={46-49, 51} del={44-45, 50} collapse={1-38}'
+lang="c"
+/>
+
+¡Genial! Llegados a este punto, en la aplicación podemos tener:
+
+<Code
+  code={`
+  #include "bme280.h"
+
+int main(void) {
+BME280_Status_t status = BME280_Status_Err;
+
+    status = BME280_init();
+    if (status != BME280_Status_Ok)
+      Error_Handler();
+
+    while (1) {
+      float temperature = 0.0f;
+
+      status = BME280_get_temperature(&temperature);
+      if (status != BME280_Status_Ok)
+        Error_Handler();
+
+      // Temperature available for the application.
+    }
+
+}
+`}
+meta='title="main.c"'
+lang="c"
+/>
+
+¡Superlimpio! Esto sí es legible. (Ignorad el uso de la función `Error_Handler` de STM32CubeMX/IDE. No suele ser recomendado hacer uso de ella, pero para el ejemplo nos sirve.) Pues ya estaría, ¿no?
+
+Pues no. Hemos encapsulado nuestras interacciones con el componente en sus prios ficheros. ¡Pero su código aún sigue llamando funciones de la plataforma (las funciones HAL)! ¡Si cambiamos de microcontroladordeberemos de reescribir el driver! Pista: aún no hemos escrito nada en el archivo `bme280_interface.h`. Vamos con ello.
+
+## Declaración de la interfaz
+
+Si nos fijamos en el archivo `bme280.c` nuestras interacciones con la plataforma son tres: para inicializarla, para escribir/enviar bytes y para leer/recibir bytes. Entonces, lo que vamos a hacer es en el archivo `bme280_interface.h` declarar esas tres interacciones.
+
+<Code
+  code={`
+  /**
+   * @file bme280_interface.h
+   * @brief Interface for BME280 sensor communication.
+   *
+   * This file contains the function declarations and type definitions
+   * for interfacing with the BME280 sensor over I2C.
+   */
+
+#ifndef BME280*INTERFACE_H*
+#define BME280*INTERFACE_H*
+
+#include <stdint.h>
+
+/\*\*
+
+- @brief Enumeration for BME280 interface status.
+  _/
+  typedef enum {
+  BME280_Interface_Ok, /\*\*< Operation successful _/
+  BME280\*Interface_Err /\*\*< Operation failed \_/
+  } BME280_Interface_Status_t;
+
+/\*\*
+
+- @brief Initialize the BME280 interface.
+-
+- @param address The I2C address of the BME280 sensor.
+- @param timeout The timeout duration for the all the interface operations.
+- @return BME280_Interface_Status_t Status of the initialization process.
+  \*/
+  BME280_Interface_Status_t BME280_Interface_init(uint8_t address,
+  uint32_t timeout);
+
+/\*\*
+
+- @brief Write data to a BME280 register.
+-
+- @param reg The register address to write to.
+- @param data Pointer to the data to be written.
+- @param size The size of the data to be written.
+- @return BME280_Interface_Status_t Status of the write operation.
+  */
+  BME280_Interface_Status_t BME280_Interface_write(uint8_t reg, uint8_t *data,
+  uint16_t size);
+
+/\*\*
+
+- @brief Read data from a BME280 register.
+-
+- @param reg The register address to read from.
+- @param data Pointer to the buffer to store the read data.
+- @param size The size of the data to be read.
+- @return BME280_Interface_Status_t Status of the read operation.
+  */
+  BME280_Interface_Status_t BME280_Interface_read(uint8_t reg, uint8_t *data,
+  uint16_t size);
+
+#endif // BME280*INTERFACE_H*
+`}
+meta='title="bme280_interface.h"'
+lang="c"
+/>
+
+Si te fijas, también hemos definido un nuevo tipo para los status de la interfaz. Ahora, en lugar de llamar las funciones de la plataforma, llamaremos estas funciones desde el archivo `bme280.c`.
+
+<Code
+  code={`
+  #include "bme280.h"
+  #include "bme280_interface.h"
+
+#define BME280_TX_BUFFER_SIZE 32U
+#define BME280_RX_BUFFER_SIZE 32U
+#define BME280_TIMEOUT 200U
+#define BME280_ADDRESS 0x77
+#define BME280_REG_CTRL_MEAS 0xF4
+#define BME280_REG_DIG_T 0x88
+#define BME280_REG_TEMP 0xFA
+
+static uint16_t dig_temp1 = 0U;
+static int16_t dig_temp2 = 0;
+static int16_t dig_temp3 = 0;
+
+BME280_Status_t BME280_init(void) {
+uint8_t idx = 0;
+uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+    BME280_Interface_Status_t status = BME280_Interface_Err;
+
+    status = BME280_Interface_init(BME280_ADDRESS, BME280_TIMEOUT);
+
+    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+
+    if (status != HAL_OK)
+      return;
+
+    if (status != BME280_Interface_Ok)
+      return BME280_Status_Err;
+
+    tx_buffer[idx++] = 0b10100011;
+
+    status =
+        BME280_Interface_write(BME280_REG_CTRL_MEAS, tx_buffer, (uint16_t)idx);
+
+    if (status != BME280_Interface_Ok)
+      return BME280_Status_Err;
+
+    status = BME280_Interface_read(BME280_REG_DIG_T, rx_buffer, 6U);
+
+    if (status != BME280_Interface_Ok)
+      return BME280_Status_Err;
+
+    dig_temp1 = ((uint16_t)rx_buffer[0]);
+    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+
+    dig_temp2 = ((int16_t)rx_buffer[2]);
+    dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
+
+    dig_temp3 = ((int16_t)rx_buffer[4]);
+    dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
+
+    return BME280_Status_Ok;
+
+}
+
+BME280_Status_t BME280_get_temperature(float \*temperature) {
+uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+int32_t adc_temp = 0;
+int32_t t_fine = 0;
+float var1 = 0.0;
+float var2 = 0.0;
+
+    BME280_Interface_Status_t status = BME280_Interface_Err;
+
+    *temperature = 0.0f;
+
+    status = BME280_Interface_read(BME280_REG_TEMP, rx_buffer, 3U);
+
+    if (status != BME280_Interface_Ok)
+      return BME280_Status_Err;
+
+    adc_temp = ((int32_t)rx_buffer[0]) << 12U;
+    adc_temp = adc_temp | (((int32_t)rx_buffer[1]) << 4U);
+    adc_temp = adc_temp | (((int32_t)rx_buffer[2]) >> 4U);
+
+    var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
+          ((float)dig_temp2);
+    var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
+            (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
+          ((float)dig_temp3);
+
+    t_fine = (int32_t)(var1 + var2);
+
+    *temperature = (float)(((float)t_fine) / 5129.0);
+
+    return BME280_Status_Ok;
+
+}
+`}
+meta='title="bme280.c"'
+lang="c"
+/>
+
+_¡Et voilà!_ Desaparecieron las dependencias de la plataforma en el driver. Tenemos un driver que funciona para STM32, para MSP430, para PIC32, etc. En los tres archivos del driver no aparecer nada propio de ninguna plataforma. ¿Que és lo único que falta? Pues definir las funciones de la interfaz. Esto es lo único que se debe de migrar/adaptar para cada plataforma. Yo normalmente lo hago dentro de la carpeta `Application/bsp/components/`. Creamos un archivo llamado `bme280_implementation.c` con el siguiente contenido:
+
+<Code
+  code={`
+  #include "bme280_interface.h"
+  #include "i2c.h"
+
+static uint8_t device_address = 0U;
+static uint32_t device_timeout = 0U;
+
+BME280_Interface_Status_t BME280_Interface_init(uint8_t address,
+uint32_t timeout) {
+
+    MX_I2C1_Init();
+
+    device_address = address;
+    device_timeout = timeout;
+
+    return BME280_Interface_Ok;
+
+}
+BME280_Interface_Status_t BME280_Interface_write(uint8_t reg, uint8_t \*data,
+uint16_t size) {
+HAL_StatusTypeDef status = HAL_ERROR;
+
+    status = HAL_I2C_Mem_Write(&hi2c1, device_address << 1U, reg, 1U, data, size,
+                              device_timeout);
+
+    if (status != HAL_OK)
+      return BME280_Interface_Err;
+
+    return BME280_Interface_Ok;
+
+}
+
+BME280_Interface_Status_t BME280_Interface_read(uint8_t reg, uint8_t \*data,
+uint16_t size) {
+HAL_StatusTypeDef status = HAL_ERROR;
+
+    status = HAL_I2C_Mem_Read(&hi2c1, device_address << 1U, reg, 1U, data, size,
+                              device_timeout);
+
+    if (status != HAL_OK)
+      return BME280_Interface_Err;
+
+    return BME280_Interface_Ok;
+
+}
+`}
+meta='title="bme280_implementation.c"'
+lang="c"
+/>
+
+De este modo en el caso de querer utilizar el driver en otro proyecto o en otra plataforma, únicamente deberemos de adaptar el archivo `bme280_implementation.c`. El resto se mantiene exactamente igual.
+
+## Otros aspectos relacionados
+
+Con esto hemos visto un ejemplo básico de un driver. Esta implementación es la más sencilla, segura y común. Sin embargo existen diferentes variantes en función de las características de nuestro proyecto. Por ejemplo, en ejemplo que hemos visto se ha realizado una selecciónd de la implementacióne en link time. Es decir, tenemos el archivo `bem280_implementation.c` que provee de las definiciones de las funciones de la interfaz durante el proceso de compilación/linkeo. ¿Qué ocurriría si quisieramos tener dos implementaciones? Una para la comunicación I2C y otra para la comunicación SPI. Pues deberíamos de indicar las implementaciones en run time mediante funciones puntero.
+
+Otro aspecto es que en este ejemplo suponemos que solo hay un solo BME280 en el sistema. ¿Qué ocurriría si tubieramos más de uno? ¿Deberíamos de copiar/pegar código y añadiendole prefijos a las funciones tipo `BME280_1`y `BME280_2`? Pues no. No es lo ideal. Lo que haríamos sería hacer uso de _handlers_ que nos permitieran operar con un mismo driver sobre diferentes instancias de un componente.
+
+Estos aspectos y como testear nuestro driver antes de incluso tener nuestro hardware disponible da para un tema aparte que veremos en otro post. De momento, ahora ya no tienes excusa para no implementar los drivers como es debido. Eso sí, mi primera recomendación (y que paradójicamente he dejado al para el final) es que antes que nada te asegures que el fabricante no provea ya una driver oficial para su componente. Esta es la manera más rápida de tener un driver listo para funcionar. Ten pon seguro que el driver que provea el fabricante seguriá una implementacion parecida a la que hemos visto hoy y que tu labor será adaptar la parte de implementación de la interfaz a tu plataforma o producto.

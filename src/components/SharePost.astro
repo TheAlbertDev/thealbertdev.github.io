@@ -1,0 +1,50 @@
+---
+import { type CollectionEntry } from "astro:content";
+import { defaultLang } from "../i18n/ui";
+import { useTranslations } from "../i18n/utils";
+import { Icon } from "astro-icon/components";
+
+const { post }: { post: CollectionEntry<"posts"> } = Astro.props;
+const { lang } = Astro.params;
+const url = Astro.url;
+
+const t = useTranslations(lang ?? defaultLang);
+
+interface SocialNetwork {
+  name: string;
+  icon: string;
+  link: string;
+}
+const socialNetworks: SocialNetwork[] = [
+  {
+    name: "X",
+    icon: "fa6-brands:x-twitter",
+    link: `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.data.title)}&url=${encodeURIComponent(url.href)}`,
+  },
+  {
+    name: "LinkedIn",
+    icon: "fa6-brands:linkedin-in",
+    link: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url.href)}&title=${encodeURIComponent(post.data.title)}`,
+  },
+  {
+    name: "Facebook",
+    icon: "fa6-brands:facebook",
+    link: `https://www.facebook.com/sharer.php?u=${encodeURIComponent(url.href)}&p[title]=${encodeURIComponent(post.data.title)}`,
+  },
+];
+---
+
+<div class="flex flex-nowrap gap-x-2 items-center">
+  <span>{t("post.share")}:</span>
+  <ul class="menu menu-horizontal -mr-2">
+    {
+      socialNetworks.map((sn) => (
+        <li>
+          <a target="_blank" href={sn.link}>
+            <Icon size={18} name={sn.icon} />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>

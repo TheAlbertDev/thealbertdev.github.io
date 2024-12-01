@@ -37,15 +37,18 @@ const categoriesCollection = defineCollection({
 
 const authorsCollection = defineCollection({
   type: "data",
-  schema: z.object({
-    name: z.string(),
-    surname: z.string().optional(),
-    image: z.string().optional(),
-    email: z.string().optional(),
-    socialMedia: z
-      .array(z.object({ name: z.string(), icon: z.string(), link: z.string() }))
-      .optional(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      name: z.string(),
+      surname: z.string().optional(),
+      image: image(),
+      email: z.string().optional(),
+      socialMedia: z
+        .array(
+          z.object({ name: z.string(), icon: z.string(), link: z.string() }),
+        )
+        .optional(),
+    }),
 });
 
 const publicationsCollection = defineCollection({

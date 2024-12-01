@@ -1,0 +1,42 @@
+---
+import { Icon } from "astro-icon/components";
+import {
+  getLangFromUrl,
+  useTranslations,
+  useTranslatedPath,
+} from "../i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<div class="drawer-side">
+  <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay block"
+  ></label>
+  <div class="relative min-h-full bg-base-200">
+    <ul class="menu w-80 p-4 mt-12 text-lg">
+      <li><a href={translatePath("/", lang)}>{t("nav.home")}</a></li>
+      <li>
+        <a href={translatePath("/posts", lang)}>{t("nav.posts")}</a>
+      </li>
+      <li>
+        <a href={translatePath("/acerca-de", lang)}>{t("nav.about")}</a>
+      </li>
+      <li>
+        <a href={translatePath("/contactar", lang)}>{t("nav.contact")}</a>
+      </li>
+    </ul>
+    <label
+      for="my-drawer"
+      aria-label="close sidebar"
+      class="absolute top-2 right-2 btn btn-square btn-ghost"
+    >
+      <Icon name="mdi:close" size={24} /></label
+    >
+  </div>
+</div>
+<style>
+  .drawer-side {
+    z-index: 2;
+  }
+</style>

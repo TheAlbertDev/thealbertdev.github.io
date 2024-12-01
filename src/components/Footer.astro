@@ -13,8 +13,8 @@ const translatePath = useTranslatedPath(lang);
 
 <footer class="footer bg-base-200 text-base-content p-10">
   <aside>
-    <div class="flex-1">
-      <a class="font-bold text-xl" href={translatePath("/", lang)}
+    <div class="flex-1 -ml-4">
+      <a class="btn btn-ghost text-xl" href={translatePath("/", lang)}
         ><div>
           <span class="font-thin">the</span><span>Albert</span><span
             class="font-thin">Dev</span
@@ -25,47 +25,57 @@ const translatePath = useTranslatedPath(lang);
   </aside>
   <nav>
     <h6 class="footer-title">{t("footer.nav.title")}</h6>
-    <a class="link link-hover" href={translatePath("/posts", lang)}
-      >{t("nav.posts")}</a
-    >
-    <a class="link link-hover" href={translatePath("/about", lang)}
-      >{t("nav.about")}</a
-    >
-    <a class="link link-hover" href={translatePath("/contact", lang)}
-      >{t("nav.contact")}</a
-    >
+    <div class="flex flex-row gap-x-16">
+      <ul class="menu menu-vertical pl-0">
+        <li>
+          <a class="-ml-4" href={translatePath("/", lang)}>{t("nav.home")}</a>
+        </li>
+        <li>
+          <a class="-ml-4" href={translatePath("/posts", lang)}
+            >{t("nav.posts")}</a
+          >
+        </li>
+        <li>
+          <a class="-ml-4" href={translatePath("/publicaciones", lang)}
+            >{t("nav.publications")}</a
+          >
+        </li>
+        <li>
+          <a class="-ml-4" href={translatePath("/acerca-de", lang)}
+            >{t("nav.about")}</a
+          >
+        </li>
+        <li>
+          <a class="-ml-4" href={translatePath("/contactar", lang)}
+            >{t("nav.contact")}</a
+          >
+        </li>
+      </ul>
+    </div>
   </nav>
   <nav>
     <h6 class="footer-title">{t("footer.social.title")}</h6>
-    <div class="grid grid-flow-col gap-4 group">
-      <a
-        target="_blank"
-        href="https://linkedin.com/in/thealbertdev"
-        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
-      >
-        <Icon name="fa6-brands:linkedin-in" size={24} />
-      </a>
-      <a
-        target="_blank"
-        href="https://github.com/TheAlbertDev"
-        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
-      >
-        <Icon name="fa6-brands:github" size={24} />
-      </a>
-      <a
-        target="_blank"
-        href="https://x.com/thealbertdev"
-        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
-      >
-        <Icon name="fa6-brands:x-twitter" size={24} />
-      </a>
-      <a
-        target="_blank"
-        href="https://orcid.org/0000-0001-5293-4487"
-        class="opacity-100 group-hover:opacity-65 hover:!opacity-100"
-      >
-        <Icon name="fa6-brands:orcid" size={24} />
-      </a>
-    </div>
+    <ul class="menu menu-horizontal pl-0 -ml-4">
+      <li>
+        <a target="_blank" href="https://linkedin.com/in/thealbertdev">
+          <Icon name="fa6-brands:linkedin-in" size={24} />
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href="https://github.com/TheAlbertDev">
+          <Icon name="fa6-brands:github" size={24} />
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href="https://x.com/thealbertdev">
+          <Icon name="fa6-brands:x-twitter" size={24} />
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href="https://orcid.org/0000-0001-5293-4487">
+          <Icon name="fa6-brands:orcid" size={24} />
+        </a>
+      </li>
+    </ul>
   </nav>
 </footer>

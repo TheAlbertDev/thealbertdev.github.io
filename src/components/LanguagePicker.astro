@@ -11,15 +11,22 @@ import { Icon } from "astro-icon/components";
 
 const route = getRouteFromUrl(Astro.url);
 const urlPath = getPathFromUrl(Astro.url);
-const lang = getLangFromUrl(Astro.url);
-const translatePath = useTranslatedPath(lang);
+const langFromUrl = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(langFromUrl);
 let postSlug = urlPath!;
 postSlug =
   (postSlug.startsWith("/posts") ? `${defaultLang}/` : "") +
   urlPath!.replace("/posts", "").slice(1);
 let post = null;
+
+const translatedPostSlugs: Partial<typeof languages> = {};
+
 try {
   post = await getEntry("posts", postSlug);
+  post!.data.translatedPosts?.forEach((tp) => {
+    const [language, slug] = tp.translatedPost.slug.split("/");
+    translatedPostSlugs[language as keyof typeof languages] = slug;
+  });
 } catch {
   post = null;
 }
@@ -31,19 +38,18 @@ try {
   </div>
   <ul
     tabindex="0"
-    class="menu dropdown-content bg-base-100 rounded-box z-[2] mt-4 w-52 p-2 shadow"
+    class="menu dropdown-content bg-base-200 rounded-box z-[2] mt-4 w-52 p-2 shadow"
   >
     {
       Object.entries(languages).map(([lang, label]) => (
+      lang === langFromUrl ? <></>:
         <li>
           <a
             href={
               post != null
-                ? post.data.translatedPosts?.find((translatedPost) =>
-                    translatedPost.translatedPost.slug.startsWith(`${lang}/`),
-                  ) != null
-                  ? `${lang === defaultLang ? "" : `/${lang}`}/posts/${post.data.translatedPosts?.find((translatedPost) => translatedPost.translatedPost.slug.startsWith(`${lang}/`))!.translatedPost.slug.split("/")[1]}`
-                  : translatePath(`/`, lang)
+                ? ((translatedPostSlugs[lang as keyof typeof languages] != null)
+                  ? `${lang === defaultLang ? "" : `/${lang}`}/posts/${translatedPostSlugs[lang as keyof typeof languages]}`
+                  : translatePath(`/`, lang))
                 : translatePath(`/${route ? route : ""}`, lang)
             }
           >

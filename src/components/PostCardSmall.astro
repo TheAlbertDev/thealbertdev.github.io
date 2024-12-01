@@ -32,7 +32,7 @@ const authors = await Promise.all(
   <div class="text-sm">
     <GradientTag> {category.data.name}</GradientTag>
   </div>
-  <h3 class="text-4xl font-bold">
+  <h3 class="text-lg font-bold">
     <a
       class="title group-hover:underline"
       href={`${translatePath(`/posts`)}/${post.slug.split("/")[1]}`}
@@ -44,11 +44,6 @@ const authors = await Promise.all(
     {
       authors.map(async (author) => (
         <>
-          <span class="avatar mr-4">
-            <div class="w-10 rounded-full">
-              <Image src={author.data.image!} alt={author.data.name} />
-            </div>
-          </span>
           <span>{author.data.name}</span>
         </>
       ))

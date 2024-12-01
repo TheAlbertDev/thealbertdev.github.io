@@ -3,12 +3,16 @@ import { getCollection } from "astro:content";
 import PostCard from "../../components/PostCard.astro";
 import PostList from "../../components/PostList.astro";
 import Layout from "../../layouts/Layout.astro";
-import { defaultLang } from "../../i18n/ui";
+import { defaultLang, languages } from "../../i18n/ui";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
 export function getStaticPaths() {
   return [{ params: { lang: "en" } }, { params: { lang: undefined } }];
 }
 
-const { lang } = Astro.params;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+
 const lastPosts = (
   await getCollection(
     "posts",
@@ -20,7 +24,7 @@ const lastPosts = (
   .slice(0, 3);
 ---
 
-<Layout title="Bienvenido to Astro.">
+<Layout title={t("nav.home")}>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 mb-12">
     <PostCard post={lastPosts[0]} />
     <PostList posts={lastPosts.slice(1, 3)} />

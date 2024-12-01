@@ -1,0 +1,79 @@
+---
+import { type GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
+import Layout from "../../../layouts/Layout.astro";
+import { defaultLang, languages } from "../../../i18n/ui";
+import {
+  getLangFromUrl,
+  useTranslatedPath,
+  useTranslations,
+} from "../../../i18n/utils";
+import PostCardSmall from "../../../components/PostCardSmall.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+
+export const getStaticPaths = (async ({ paginate }) => {
+  return (
+    await Promise.all(
+      Object.keys(languages).flatMap(async (lang) => {
+        const posts = (await getCollection("posts"))
+          .filter((post) => post.slug.split("/")[0] === lang)
+          .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+        return paginate(posts, {
+          pageSize: 20,
+          params: { lang: lang === defaultLang ? undefined : lang },
+        });
+      }),
+    )
+  ).flat();
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+
+let paginationSelector: string[] = [];
+
+if (page.lastPage <= 5) {
+  paginationSelector = Array.from({ length: page.lastPage }, (_, index) =>
+    (index + 1).toString(),
+  );
+}
+
+const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+---
+
+<Layout title={t("nav.posts")}>
+  <div class="container mx-auto max-w-screen-lg">
+    <h1 class="text-4xl mb-6 font-bold">Blog</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-6 mb-12">
+      {
+        page.data.map((post) => (
+          <div class="border-b-[0.125rem] border-base-content border-opacity-10 pb-6 mt-6">
+            <PostCardSmall post={post} />
+          </div>
+        ))
+      }
+    </div>
+    <div class="block mx-auto w-min mb-6">
+      <div class="join">
+        {
+          paginationSelector.map((pageNumber) => (
+            <a
+              class={`join-item btn ${pageNumber === page.currentPage.toString() ? "btn-active" : ""}`}
+              href={
+                pageNumber === page.currentPage.toString()
+                  ? "#"
+                  : pageNumber !== "1"
+                    ? `${translatePath("/posts")}/${pageNumber}`
+                    : translatePath("/posts")
+              }
+            >
+              {pageNumber}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</Layout>

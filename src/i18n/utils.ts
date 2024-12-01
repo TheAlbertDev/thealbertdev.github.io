@@ -25,8 +25,8 @@ export function useTranslatedPath(lang: keyof typeof ui) {
     const translatedPath = hasTranslation ? routes[l][pathName] : path;
 
     return !showDefaultLang && l === defaultLang
-      ? translatedPath
-      : `/${l}${translatedPath}`;
+      ? `/${translatedPath}`
+      : `/${l}${translatedPath !== "" ? `/` : ""}${translatedPath}`;
   };
 }
 
