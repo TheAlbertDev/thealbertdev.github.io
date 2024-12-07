@@ -10,6 +10,8 @@ import SharePost from "../../../components/SharePost.astro";
 import TableofContents from "../../../components/TableofContents.astro";
 import Tags from "../../../components/Tags.astro";
 import { Code } from "astro-expressive-code/components";
+import InfoNote from "../../../components/InfoNote.astro";
+import AuthorNote from "../../../components/AuthorNote.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -78,13 +80,13 @@ const readingMinutes = Math.ceil(readingTime(post.body).minutes);
       <SharePost post={post} />
     </section>
     <div class="divider"></div>
-    <div class="grid grid-row-2 md:gap-x-12 md:grid-cols-12 lg:grid-cols-10">
+    <div class="grid grid-row-2 md:gap-x-12 grid-cols-1 md:grid-cols-12 lg:grid-cols-10">
       <section
-        class="article-content prose-pre:max-w-[85vw] md:prose-pre:max-w-none prose prose-p:mb-6 prose-h2:mb-5 prose-h2:mt-10 prose-h3:mb-3 prose-h3:mt-5 md:col-span-8 lg:col-span-7 text-lg"
+        class="article-content prose-pre:max-w-[85vw] md:prose-pre:max-w-none prose prose-p:mb-6 prose-h2:mb-5 prose-h2:mt-10 prose-h3:mb-3 prose-h3:mt-5 col-span-1 md:col-span-8 lg:col-span-7 text-lg"
       >
-        <Content components={{ Code }} />
+        <Content components={{ Code, InfoNote, AuthorNote }} />
       </section>
-      <aside class="md:col-span-4 lg:col-span-3">
+      <aside class="col-span-1 md:col-span-4 lg:col-span-3">
         <section><Tags tags={post.data.tags} /></section>
         <section class="hidden md:block sticky top-20">
           <TableofContents headings={headings} />

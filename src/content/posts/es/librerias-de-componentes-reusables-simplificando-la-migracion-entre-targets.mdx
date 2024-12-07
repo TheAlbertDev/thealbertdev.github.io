@@ -1,8 +1,9 @@
 ---
 title: "Librerías de Componentes Reusables: Simplificando la Migración entre Targets"
 draft: false
-description: En progreso
-category: es/programación-c
+description: >-
+  Una mirada a cómo las librerías bien diseñadas pueden hacer que cambiar de plataforma sea más fácil. Separar la lógica de las dependencias específicas ayuda a mantener el código limpio, reutilizable y preparado para los retos del desarrollo multiplataforma.
+category: es/programacion-c
 tags:
   - firmware
   - c
@@ -10,10 +11,12 @@ tags:
 image: /img/pexels-arturoaez220-18734769.jpg
 authors:
   - author: albert-alvarez
-pubDate: 2024-11-29T23:00:00.000Z
+pubDate: 2024-12-01T12:00:00.000Z
+translatedPosts:
+  - translatedPost: en/reusable-component-libraries-simplifying-migration-between-targets
 ---
 
-Operar con componentes externos al propio microcontrolador o target es lo más habitual en el desarrollo de firmware. Por ello, saber como desarrollar librerías para ellos es primordial. Esas librerías son las que nos permiten interactuar con ellos y poder intercambiar información u ordenes. Sin embargo, no son pocas las veces en las que me encuentro, en legacy code o en código de estudiantes (o no tan estudiantes), que esas interacciones con los componentes se hacen directamente en el código de la aplicación o, aún estando en ficheros aparte, esas interacciones están intrínsecamente ligadas al target.
+Operar con componentes externos al propio microcontrolador o target es lo más habitual en el desarrollo de firmware. Por ello, saber cómo desarrollar librerías para ellos es primordial. Esas librerías son las que nos permiten interactuar con ellos y poder intercambiar información u órdenes. Sin embargo, no son pocas las veces en las que me encuentro, en código heredado o en código de estudiantes (o no tan estudiantes), que esas interacciones con los componentes se hacen directamente en el código de la aplicación o, aún estando en ficheros aparte, esas interacciones están intrínsecamente ligadas al target.
 
 Veamos un mal ejemplo de desarrollo de librerías para un sensor de temperatura, humedad y presión BME280 de Bosch en una aplicación para un STM32F401RE de STMicroelectronics. En el ejemplo, queremos inicializar el componente y leer la temperatura cada 1 segundo. (En el código de ejemplo vamos a obviar todo el "ruido" que genera STM32CubeMX/IDE, como la inicialización de los diferntes relojes y periféricos, o los comentarios tipo `USER CODE BEGIN` o `USER CODE END`.)
 
@@ -22,117 +25,92 @@ Veamos un mal ejemplo de desarrollo de librerías para un sensor de temperatura,
   #include "i2c.h"
   #include <stdint.h>
 
-  int main(void) {
+  int main(void)
+  {
+      uint8_t  idx           = 0;
+      uint8_t  tx_buffer[64] = {0};
+      uint8_t  rx_buffer[64] = {0};
+      uint16_t dig_temp1     = 0U;
+      int16_t  dig_temp2     = 0;
+      int16_t  dig_temp3     = 0;
 
-    uint8_t idx = 0;
-    uint8_t tx_buffer[64] = {0};
-    uint8_t rx_buffer[64] = {0};
-    uint16_t dig_temp1 = 0U;
-    int16_t dig_temp2 = 0;
-    int16_t dig_temp3 = 0;
+      MX_I2C1_Init();
 
-    MX_I2C1_Init();
+      tx_buffer[idx++] = 0b10100011;
 
-    tx_buffer[idx++] = 0b10100011;
+      HAL_I2C_Mem_Write(&hi2c1, 0x77 << 1U, 0xF4, 1U, tx_buffer, 1U, 200U);
 
-    HAL_I2C_Mem_Write(&hi2c1, 0x77 << 1U, 0xF4, 1U, tx_buffer, 1U, 200U);
+      HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0x88, 1U, rx_buffer, 6U, 200U);
 
-    HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0x88, 1U, rx_buffer, 6U, 200U);
+      dig_temp1 = ((uint16_t)rx_buffer[0]) | (((uint16_t)rx_buffer[1]) << 8U);
 
-    dig_temp1 = ((uint16_t)rx_buffer[0]) | (((uint16_t)rx_buffer[1]) << 8U);
+      dig_temp2 = (int16_t)(((uint16_t)rx_buffer[2]) | (((uint16_t)rx_buffer[3]) << 8U));
 
-    dig_temp2 =
-        (int16_t)(((uint16_t)rx_buffer[2]) | (((uint16_t)rx_buffer[3]) << 8U));
+      dig_temp3 = (int16_t)(((uint16_t)rx_buffer[4]) | (((uint16_t)rx_buffer[5]) << 8U));
 
-    dig_temp3 =
-        (int16_t)(((uint16_t)rx_buffer[4]) | (((uint16_t)rx_buffer[5]) << 8U));
+      while (1)
+      {
+          float   temperature = 0.0f;
+          int32_t adc_temp    = 0;
+          int32_t t_fine      = 0;
+          float   var1        = 0.0;
+          float   var2        = 0.0;
 
-    while (1) {
+          HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0xFA, 1U, rx_buffer, 3U, 200U);
 
-      float temperature = 0.0f;
-      int32_t adc_temp = 0;
-      int32_t t_fine = 0;
-      float var1 = 0.0;
-      float var2 = 0.0;
+          adc_temp = (int32_t *)((((uint32_t)rx_buffer[0]) << 12U) | (((uint32_t)rx_buffer[1]) << 4U) |
+                                (((uint32_t)rx_buffer[2]) >> 4U));
 
-      HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0xFA, 1U, rx_buffer, 3U, 200U);
+          var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) * ((float)dig_temp2);
+          var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
+                  (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
+                ((float)dig_temp3);
 
-      adc_temp = (int32_t *)((((uint32_t)rx_buffer[0]) << 12U) |
-                            (((uint32_t)rx_buffer[1]) << 4U) |
-                            (((uint32_t)rx_buffer[2]) >> 4U));
+          t_fine = (int32_t)(var1 + var2);
 
-      var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
-            ((float)dig_temp2);
-      var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
-              (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
-            ((float)dig_temp3);
+          temperature = (float)(((float)t_fine) / 5129.0f);
 
-      t_fine = (int32_t)(var1 + var2);
-
-      temperature = (float)(((float)t_fine) / 5129.0);
-
-      // Temperature available for the application.
-    }
+          // Temperature available for the application.
+      }
   }
 `}
 lang="c"
 meta='title="main.c"'
 />
 
-Basándonos en este ejemplo, podemos plantearnos una serie de cuestiones: ¿qué ocurre si necesito cambiar de plataforma (ya sea por falta de stock, querer reducir costes, o por simplemente trabajar en otro producto que hace uso del mismo componente)?, ¿qué ocurre si tengo más de un componente del mismo tipo en el sistema?, ¿qué ocurre si en otro producto tengo el mismo componente?, ¿como puedo testear mi desarrollo si aún no dispongo del hardware (situación muy común en el mundo profesional en el que las fases de desarrollo de firmware y hardware se suelen solapar en algunos instantes del proceso)?
+Basándonos en este ejemplo, podemos plantearnos una serie de cuestiones: ¿qué ocurre si necesito cambiar de target (ya sea por falta de stock, querer reducir costes, o por simplemente trabajar en otro producto que hace uso del mismo componente)?, ¿qué ocurre si tengo más de un componente del mismo tipo en el sistema?, ¿qué ocurre si en otro producto tengo el mismo componente?, ¿como puedo testear mi desarrollo si aún no dispongo del hardware (situación muy común en el mundo profesional en el que las fases de desarrollo de firmware y hardware se suelen solapar en algunos instantes del proceso)?
 
-En las tres primeras cuestiones la respuesta es editar el código, ya sea por tener que cambiarlo completamente al cambiar de plataforma, por tener que duplicar el código ya existente para poder operar con un componente adicional del mismo tipo, o por tener que implementar el mismo código para el otro proyecto/producto. En la última cuestión, no hay manera de poder testear el código sin disponer del hardware que permita ejecutar el código. Esto implica que solo después de haberse finalizado el hardware podríamos empezar a testear nuestro código y empezar a solucionar errores inherentes al desarrollo de firmware, alargando el tiempo de desarrollo del producto. Esto nos plantea la pregunta que dá origen a este post: ¿es posible desarrollar drivers para componentes que sean independientes de la plataforma y nos permitan su reuso? La respuesta es sí y es lo que veremos en este post.
+En las tres primeras cuestiones la respuesta es editar el código, ya sea por tener que cambiarlo completamente al cambiar de target, por tener que duplicar el código ya existente para poder operar con un componente adicional del mismo tipo, o por tener que implementar el mismo código para el otro proyecto/producto. En la última cuestión, no hay manera de poder testear el código sin disponer del hardware que permita ejecutar el código. Esto implica que solo después de haberse finalizado el hardware podríamos empezar a testear nuestro código y empezar a solucionar errores inherentes al propio desarrollo de firmware, alargando el tiempo de desarrollo del producto. Esto nos plantea la pregunta que dá origen a este post: ¿es posible desarrollar librerías para componentes que sean independientes del target y nos permitan su reuso? La respuesta es sí y es lo que veremos en este post.
 
-## Aislando los drivers de la plataforma
+## Aislando la librería del target
 
-Para poder aislar los drivers de una plataforma seguiremos dos reglas: 1) implementaremos los drivers en su propia unidad de compilación, es decir, en su propio archivo, y 2) no habrá niguna referencia a ningúna header o función propia de la plataforma. Haremos un ejemplo implementando una librería sencilla para el BME280. Para empezar, crearemos dentro de nuestro proyecto una carpeta llamada `bme280`. Yo suelo poner las carpetas de los drivers dentro de `Application/lib/`. Dentro de la carpeta `bme280` creamos los ficheros: `bme280.c`, `bme280.h`, y `bme280_interface.h`. Os aclaro ya la duda: no, no se me ha olvidado nombrar el fichero `bme280_interface.c`. Este archivo no formará parte del driver.
+Para poder aislar las librerías de un target seguiremos dos reglas: 1) implementaremos la librería en su propia unidad de compilación, es decir, en su propio archivo, y 2) no habrá niguna referencia a ningúna header o función propia del target. Haremos un ejemplo implementando una librería sencilla para el BME280. Para empezar, crearemos dentro de nuestro proyecto una carpeta llamada `bme280`. Dentro de la carpeta `bme280` creamos los ficheros: `bme280.c`, `bme280.h`, y `bme280_interface.h`. Os aclaro ya la duda: no, no se me ha olvidado nombrar el fichero `bme280_interface.c`. Este archivo no formará parte de la librería.
 
-El archivo `bme280.h` declará todas las funciones disponibles en nuestro driver para ser llamadas por nuestra aplicación. Por otro lado, el archivo `bme280.c` implementará la definición de esas funciones y otras auxiliares y privadas que pueda contener el driver. ¿Y qué continene el archivo `bme280_interface.h`? Pues bien, nuestro microcontrolador, sea cual sea, necesitará comunicarse con el componente BME280 de un modo u otro. En este caso, el BME280 permite comunicación SPI o I2C. En ambos casos, el sistema debe de poder escribir y leer bytes del componente. El archivo `bme280_interface.h` declara esas funciones para poder ser llamadas desde el driver. La definición de esas funciones será lo único que estará atado a la plataforma en cuestión y será lo único que debamos de editar en caso de migrar el driver a otra plataforma.
+<AuthorNote authorRef={frontmatter.authors[0].author} notes={["Yo suelo poner las carpetas de las librerías dentro de `Application/lib/`."]}/>
 
-## Declaración de la API del driver
+El archivo `bme280.h` declarará todas las funciones disponibles en nuestra librería para ser llamadas por nuestra aplicación. Por otro lado, el archivo `bme280.c` implementará la definición de esas funciones y otras auxiliares y privadas que pueda contener la librería. ¿Y qué continene el archivo `bme280_interface.h`? Pues bien, nuestro target, sea cual sea, necesitará comunicarse con el componente BME280 de un modo u otro. En este caso, el BME280 permite comunicación SPI o I2C. En ambos casos, el target debe de poder escribir y leer bytes del componente. El archivo `bme280_interface.h` declarará esas funciones para poder ser llamadas desde la librería. La definición de esas funciones será lo único que estará atado al target en cuestión y será lo único que debamos de editar en caso de migrar la librería a otro target.
 
-Empezamos declarando las funciones disponibles en el driver en el archivo `bme280.h`.
+## Declaración de la API de la librería
+
+Empezamos declarando las funciones disponibles en la librería en el archivo `bme280.h`.
 
 <Code
   code={`
-  /**
-   * @file BME280.h
-   * @brief Header file for interfacing with the BME280 sensor.
-   *
-   * This file contains the declarations of the functions required to initialize
-   * and interact with the BME280 sensor, which measures temperature, humidity,
-   * and pressure.
-   */
+  #ifndef BME280_H_
+  #define BME280_H_
 
-#ifndef BME280*H*
-#define BME280*H*
-
-/\*\*
-
-- @brief Initializes the BME280 sensor.
--
-- This function configures the BME280 sensor for operation. It must be called
-- before any other interaction with the sensor.
-  \*/
-  void BME280_init(void);
-
-/\*\*
-
-- @brief Gets the current temperature from the BME280 sensor.
--
-- This function retrieves the temperature value measured by the BME280 sensor.
--
-- @return The temperature in degrees Celsius.
-  \*/
+  void  BME280_init(void);
   float BME280_get_temperature(void);
 
-#endif // BME280*H*
+  #endif // BME280_H_
 `}
 lang="c"
 meta='title="bme280.h"'
 />
 
-Como buenos desarrolladores, incluímos documentación a las declaraciones para facilitar su uso. (Hoy en día con la IA no hay excusa para no documentar tu código.) El driver que estamos haciendo será muy simplificado y solo implementaremos una función de inicialiciación sencilla y otra para obtener una medida de temperatura. Ahora vamos a implementar las funciones en el archivo `bme280.c`.
+La libería que estamos haciendo será muy simple y solo implementaremos una función de inicialiciación sencilla y otra para obtener una medida de temperatura. Ahora vamos a implementar las funciones en el archivo `bme280.c`.
+
+<InfoNote>Para no hacer el post muy *verbose*, me estoy ahorrando los comentarios que documentarían las funciones. En este fichero .h es donde irían esos comentarios. Teniendo disponibles hoy en días tantas herramientas IA, no hay excusa para no documentar tu código.</InfoNote>
 
 ## Implementación de la API del driver
 
@@ -152,7 +130,7 @@ meta='title="bme280.c"'
 lang="c"
 />
 
-Vamos a centrarnos en la inicialización. Como hemos comentado antes, el BME280 permite comunicación I2C y SPI. En ambos casos, debemos de inicializar el periférico pertinente del microcontrolador (I2C o SPI) y posteriormente debemos de poder enviar y recibir bytes a través de ellos. Suponiendo que usamos comunicación I2C, en el STM32F401RE sería:
+Vamos a centrarnos en la inicialización. Como hemos comentado antes, el BME280 permite comunicación I2C y SPI. En ambos casos, debemos de inicializar el periférico pertinente del target (I2C o SPI) y posteriormente debemos de poder enviar y recibir bytes a través de ellos. Suponiendo que usamos comunicación I2C, en el STM32F401RE sería:
 
 <Code
   code={`
@@ -168,7 +146,7 @@ meta='title="bme280.c" ins={2} collapse={4-7}'
 lang="c"
 />
 
-Una vez inicializado el periférico, debemos de inicializar el componente. Ahí deberemos de hacer uso de la información provisto por el fabricante en su [datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/). Ya os hago yo un resumen: se debe de iniciar el canal de muestreo de la temperatura (que está en sleep por defecto) y leer unas constantes de calibración del componente guardas en su ROM y que necesitaremos más adelante para poder calcular la temperatura. (El objetivo del post no es aprender a usar el BME280, por lo que me saltaré detalles de su uso que podéis ver su datasheet.) La inicialización quedaría del siguiente modo:
+Una vez inicializado el periférico, debemos de inicializar el componente. Ahí deberemos de hacer uso de la información provista por el fabricante en su [datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/). Ya os hago yo un resumen: se debe de iniciar el canal de muestreo de la temperatura (que está en sleep por defecto) y leer unas constantes de calibración del componente guardadas en su ROM y que necesitaremos más adelante para poder calcular la temperatura. (El objetivo del post no es aprender a usar el BME280, por lo que me saltaré detalles de su uso que podéis ver en su datasheet.) La inicialización quedaría del siguiente modo:
 
 <Code
   code={`
@@ -230,9 +208,9 @@ meta='title="bme280.c" ins={1-14, 16-21, 23-47} collapse={49-52}'
 lang="c"
 />
 
-Detallitos a comentar. El valor de calibración que leemos lo guardamos en unas variables llamadas `dig_temp1`, `dig_temp2` y `dig_temp3`. Esas variables están declaradas como globales para que estén disponibles luego para el resto de funciones del driver. Sin embargo, están declaradas como estáticas para que solo estén accesibles dentro del driver. Nadie fuera del driver necesita tener acceso a esos valores ni debe de poder modificarlos.
+Detallitos a comentar. El valor de calibración que leemos lo guardamos en unas variables llamadas `dig_temp1`, `dig_temp2` y `dig_temp3`. Esas variables están declaradas como globales para que estén luego disponibles para el resto de funciones de la librería. Sin embargo, están declaradas como estáticas para que solo estén accesibles dentro de la librería. Nadie fuera de la librería necesita tener acceso a esos valores ni debe de poder modificarlos.
 
-También vemos que se comprueba el valor devuelto por las instrucciones de I2C y en el caso de algún fallo detenmos la ejecución de la función. No está mal, pero es mejorable. ¿No estaría mejor notificar al que ha llamado a la función `BME280_init` que algo no ha ido bien si ha sido el caso? Para ello, en el archivo `bme280.h` definimos el siguiente `enum`. (Yo los hago utilizando `typedef`. Hay debate sobre el uso de los `typedef` ya que permiten mejorar la legibilidad del código a costa de ocultar detalles. Es cuestión de gustos.)
+También vemos que se comprueba el valor devuelto por las instrucciones de I2C y en el caso de algún fallo detenmos la ejecución de la función. No está mal, pero es mejorable. ¿No estaría mejor notificar al que ha llamado a la función `BME280_init` que algo no ha ido bien si ha sido el caso? Para ello, en el archivo `bme280.h` definimos el siguiente `enum`. (Yo los hago utilizando `typedef`. Hay debate sobre el uso de los `typedef` ya que permiten mejorar la legibilidad del código a costa de ocultar detalles. Es cuestión de gustos y de estar todos los miembros del equipo de desarrollo en la misma página.)
 
 <Code
   code={`
@@ -414,7 +392,7 @@ meta='title="bme280.c" ins={1, 32, 39, 51} del={31, 38, 50} collapse={5-15, 17-2
 lang="c"
 />
 
-Puesto que utilizamos el enum de status, debemos incluir el fichero `bme280.h` en el archivo `bme280.c`. Ya hemos inicializado el driver. Ahora vamos hacer la función para obtener la temperatura. Tendría el siguiente aspecto:
+Puesto que utilizamos el enum de status, debemos de incluir el fichero `bme280.h` en el archivo `bme280.c`. Ya hemos inicializado la librería. Ahora vamos a hacer la función para obtener la temperatura. Tendría el siguiente aspecto:
 
 <Code
   code={`
@@ -606,11 +584,11 @@ lang="c"
 
 ¡Superlimpio! Esto sí es legible. (Ignorad el uso de la función `Error_Handler` de STM32CubeMX/IDE. No suele ser recomendado hacer uso de ella, pero para el ejemplo nos sirve.) Pues ya estaría, ¿no?
 
-Pues no. Hemos encapsulado nuestras interacciones con el componente en sus prios ficheros. ¡Pero su código aún sigue llamando funciones de la plataforma (las funciones HAL)! ¡Si cambiamos de microcontroladordeberemos de reescribir el driver! Pista: aún no hemos escrito nada en el archivo `bme280_interface.h`. Vamos con ello.
+¡Pues no! Hemos encapsulado nuestras interacciones con el componente en sus propios ficheros. ¡Pero su código aún sigue llamando funciones del target (las funciones HAL)! ¡Si cambiamos de target deberemos de reescribir la librería! Pista: aún no hemos escrito nada en el archivo `bme280_interface.h`. Vamos con ello.
 
 ## Declaración de la interfaz
 
-Si nos fijamos en el archivo `bme280.c` nuestras interacciones con la plataforma son tres: para inicializarla, para escribir/enviar bytes y para leer/recibir bytes. Entonces, lo que vamos a hacer es en el archivo `bme280_interface.h` declarar esas tres interacciones.
+Si nos fijamos en el archivo `bme280.c`, nuestras interacciones con el target son tres: para inicializar periféricos, para escribir/enviar bytes, y para leer/recibir bytes. Entonces, lo que vamos a hacer es en el archivo `bme280_interface.h` declarar esas tres interacciones.
 
 <Code
   code={`
@@ -677,7 +655,7 @@ meta='title="bme280_interface.h"'
 lang="c"
 />
 
-Si te fijas, también hemos definido un nuevo tipo para los status de la interfaz. Ahora, en lugar de llamar las funciones de la plataforma, llamaremos estas funciones desde el archivo `bme280.c`.
+Si te fijas, también hemos definido un nuevo tipo para los status de la interfaz. Ahora, en lugar de llamar las funciones del target, llamaremos estas funciones desde el archivo `bme280.c`.
 
 <Code
   code={`
@@ -779,7 +757,7 @@ meta='title="bme280.c"'
 lang="c"
 />
 
-_¡Et voilà!_ Desaparecieron las dependencias de la plataforma en el driver. Tenemos un driver que funciona para STM32, para MSP430, para PIC32, etc. En los tres archivos del driver no aparecer nada propio de ninguna plataforma. ¿Que és lo único que falta? Pues definir las funciones de la interfaz. Esto es lo único que se debe de migrar/adaptar para cada plataforma. Yo normalmente lo hago dentro de la carpeta `Application/bsp/components/`. Creamos un archivo llamado `bme280_implementation.c` con el siguiente contenido:
+_¡Et voilà!_ Desaparecieron las dependencias del target en la librería. Tenemos una librería que funciona para STM32, para MSP430, para PIC32, etc. En los tres archivos de la libería no debería aparecer nada propio de ningun target. ¿Que és lo único que falta? Pues definir las funciones de la interfaz. Esto es lo único que se debe de migrar/adaptar para cada target. Yo normalmente lo hago dentro de la carpeta `Application/bsp/components/`. Creamos un archivo llamado `bme280_implementation.c` con el siguiente contenido:
 
 <Code
   code={`
@@ -832,12 +810,12 @@ meta='title="bme280_implementation.c"'
 lang="c"
 />
 
-De este modo en el caso de querer utilizar el driver en otro proyecto o en otra plataforma, únicamente deberemos de adaptar el archivo `bme280_implementation.c`. El resto se mantiene exactamente igual.
+De este modo en el caso de querer utilizar la librería en otro proyecto o en otro target, únicamente deberemos de adaptar el archivo `bme280_implementation.c`. El resto se mantiene exactamente igual.
 
-## Otros aspectos relacionados
+## Otros aspectos a terner en cuenta
 
-Con esto hemos visto un ejemplo básico de un driver. Esta implementación es la más sencilla, segura y común. Sin embargo existen diferentes variantes en función de las características de nuestro proyecto. Por ejemplo, en ejemplo que hemos visto se ha realizado una selecciónd de la implementacióne en link time. Es decir, tenemos el archivo `bem280_implementation.c` que provee de las definiciones de las funciones de la interfaz durante el proceso de compilación/linkeo. ¿Qué ocurriría si quisieramos tener dos implementaciones? Una para la comunicación I2C y otra para la comunicación SPI. Pues deberíamos de indicar las implementaciones en run time mediante funciones puntero.
+Con esto hemos visto un ejemplo básico de una libería. Esta implementación es la más sencilla, segura y común. Sin embargo existen diferentes variantes en función de las características de nuestro proyecto. Por ejemplo, hemos visto como realizar una selección de la implementacióne en link time. Es decir, tenemos el archivo `bem280_implementation.c` que provee de las definiciones de las funciones de la interfaz durante el proceso de compilación/linkeo. ¿Qué ocurriría si quisieramos tener dos implementaciones? Una para la comunicación I2C y otra para la comunicación SPI. Pues deberíamos de indicar las implementaciones en run time mediante funciones puntero.
 
-Otro aspecto es que en este ejemplo suponemos que solo hay un solo BME280 en el sistema. ¿Qué ocurriría si tubieramos más de uno? ¿Deberíamos de copiar/pegar código y añadiendole prefijos a las funciones tipo `BME280_1`y `BME280_2`? Pues no. No es lo ideal. Lo que haríamos sería hacer uso de _handlers_ que nos permitieran operar con un mismo driver sobre diferentes instancias de un componente.
+Otro aspecto es que en este ejemplo suponemos que solo hay un solo BME280 en el sistema. ¿Qué ocurriría si tubieramos más de uno? ¿Deberíamos de copiar/pegar código y añadiendole prefijos a las funciones tipo `BME280_1`y `BME280_2`? Pues no. No es lo ideal. Lo que haríamos sería hacer uso de _handlers_ que nos permitieran operar con una misma libería sobre diferentes instancias de un componente.
 
-Estos aspectos y como testear nuestro driver antes de incluso tener nuestro hardware disponible da para un tema aparte que veremos en otro post. De momento, ahora ya no tienes excusa para no implementar los drivers como es debido. Eso sí, mi primera recomendación (y que paradójicamente he dejado al para el final) es que antes que nada te asegures que el fabricante no provea ya una driver oficial para su componente. Esta es la manera más rápida de tener un driver listo para funcionar. Ten pon seguro que el driver que provea el fabricante seguriá una implementacion parecida a la que hemos visto hoy y que tu labor será adaptar la parte de implementación de la interfaz a tu plataforma o producto.
+Estos aspectos y como testear nuestra librería antes de incluso tener nuestro hardware disponible da para un tema aparte que veremos en otros posts. De momento, ahora ya no tenemos excusa para no implementar las librerías como es debido. Eso sí, mi primera recomendación (y que paradójicamente he dejado para el final) es que antes que nada te asegures que el fabricante no provea ya una librería oficial para su componente. Esta es la manera más rápida de tener una librería lista para funcionar. Ten pon seguro que la librería que provea el fabricante seguriá una implementacion parecida a la que hemos visto hoy y que nuestra labor será adaptar la parte de implementación de la interfaz a nuestro target o producto.

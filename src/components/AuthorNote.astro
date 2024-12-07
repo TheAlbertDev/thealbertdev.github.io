@@ -1,0 +1,26 @@
+---
+import { getEntry } from "astro:content";
+import { Image } from "astro:assets";
+
+interface AuthorNoteProps {
+  authorRef: string;
+  notes: string[];
+}
+
+const { authorRef, notes } = Astro.props as AuthorNoteProps;
+
+const author = (await getEntry("authors", authorRef))!;
+---
+
+{
+  notes.map((note) => (
+    <div class="chat chat-start">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <Image src={author.data.image!} alt={author.data.name} class="m-0"/>
+        </div>
+      </div>
+      <div class="chat-bubble">{note}</div>
+    </div>
+  ))
+}

@@ -27,9 +27,11 @@ import { Icon } from "astro-icon/components";
   window.localStorage.setItem("theme", theme);
 
   document.getElementById("theme-toggle").checked = theme === "dark";
-
+  document.querySelector("html").setAttribute("data-code-theme", document.getElementById("theme-toggle").checked ? "github-dark-dimmed" : "github-light");
+  
   const handleToggleClick = (event) => {
     localStorage.setItem("theme", event.target.checked ? "dark" : "light");
+    document.querySelector("html").setAttribute("data-code-theme", event.target.checked ? "github-dark-dimmed" : "github-light");
   };
 
   document
