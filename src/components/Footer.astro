@@ -11,7 +11,7 @@ const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 ---
 
-<footer class="footer bg-base-200 text-base-content p-10">
+<footer class="footer bg-base-200 text-base-content p-10 mt-10">
   <aside>
     <div class="flex-1 -ml-4">
       <a class="btn btn-ghost text-xl" href={translatePath("/", lang)}
@@ -35,7 +35,7 @@ const translatePath = useTranslatedPath(lang);
             >{t("nav.posts")}</a
           >
         </li>
-        <li>
+        <!-- <li>
           <a class="-ml-4" href={translatePath("/publicaciones", lang)}
             >{t("nav.publications")}</a
           >
@@ -49,7 +49,7 @@ const translatePath = useTranslatedPath(lang);
           <a class="-ml-4" href={translatePath("/contactar", lang)}
             >{t("nav.contact")}</a
           >
-        </li>
+        </li> -->
       </ul>
     </div>
   </nav>

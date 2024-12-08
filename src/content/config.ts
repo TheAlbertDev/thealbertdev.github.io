@@ -37,11 +37,11 @@ const categoriesCollection = defineCollection({
 
 const authorsCollection = defineCollection({
   type: "data",
-  schema: ({ image }) =>
+  schema: 
     z.object({
       name: z.string(),
       surname: z.string().optional(),
-      image: image(),
+      image: z.string(),
       email: z.string().optional(),
       socialMedia: z
         .array(

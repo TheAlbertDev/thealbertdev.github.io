@@ -7,11 +7,11 @@ category: es/programacion-c
 tags:
   - firmware
   - c
-  - development
-image: /img/pexels-arturoaez220-18734769.jpg
+  - desarrollo
+image: /src/assets/imgs/pexels-arturoaez220-18734769.jpg
 authors:
   - author: albert-alvarez
-pubDate: 2024-12-01T12:00:00.000Z
+pubDate: 2024-12-07T12:00:00.000Z
 translatedPosts:
   - translatedPost: en/reusable-component-libraries-simplifying-migration-between-targets
 ---
@@ -22,57 +22,69 @@ Veamos un mal ejemplo de desarrollo de librerías para un sensor de temperatura,
 
 <Code
   code={`
-  #include "i2c.h"
-  #include <stdint.h>
+#include "i2c.h"
+#include <stdint.h>
 
-  int main(void)
-  {
-      uint8_t  idx           = 0;
-      uint8_t  tx_buffer[64] = {0};
-      uint8_t  rx_buffer[64] = {0};
-      uint16_t dig_temp1     = 0U;
-      int16_t  dig_temp2     = 0;
-      int16_t  dig_temp3     = 0;
+int main(void)
+{
+    uint8_t  idx           = 0U;
+    uint8_t  tx_buffer[64] = {0};
+    uint8_t  rx_buffer[64] = {0};
+    uint16_t dig_temp1     = 0U;
+    int16_t  dig_temp2     = 0;
+    int16_t  dig_temp3     = 0;
 
-      MX_I2C1_Init();
+    MX_I2C1_Init();
 
-      tx_buffer[idx++] = 0b10100011;
+    tx_buffer[idx++] = 0b10100011;
 
-      HAL_I2C_Mem_Write(&hi2c1, 0x77 << 1U, 0xF4, 1U, tx_buffer, 1U, 200U);
+    HAL_I2C_Mem_Write(&hi2c1, 0x77U << 1U, 0xF4U, 1U,
+                      tx_buffer, 1U, 200U);
 
-      HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0x88, 1U, rx_buffer, 6U, 200U);
+    HAL_I2C_Mem_Read(&hi2c1, 0x77U << 1U, 0x88U, 1U,
+                     rx_buffer, 6U, 200U);
 
-      dig_temp1 = ((uint16_t)rx_buffer[0]) | (((uint16_t)rx_buffer[1]) << 8U);
+    dig_temp1 = ((uint16_t)rx_buffer[0]) |
+                (((uint16_t)rx_buffer[1]) << 8U);
 
-      dig_temp2 = (int16_t)(((uint16_t)rx_buffer[2]) | (((uint16_t)rx_buffer[3]) << 8U));
+    dig_temp2 = (int16_t)(((uint16_t)rx_buffer[2]) |
+                          (((uint16_t)rx_buffer[3]) << 8U));
 
-      dig_temp3 = (int16_t)(((uint16_t)rx_buffer[4]) | (((uint16_t)rx_buffer[5]) << 8U));
+    dig_temp3 = (int16_t)(((uint16_t)rx_buffer[4]) |
+                          (((uint16_t)rx_buffer[5]) << 8U));
 
-      while (1)
-      {
-          float   temperature = 0.0f;
-          int32_t adc_temp    = 0;
-          int32_t t_fine      = 0;
-          float   var1        = 0.0;
-          float   var2        = 0.0;
+    while (1)
+    {
+        float   temperature = 0.0f;
+        int32_t adc_temp    = 0;
+        int32_t t_fine      = 0;
+        float   var1        = 0.0f;
+        float   var2        = 0.0f;
 
-          HAL_I2C_Mem_Read(&hi2c1, 0x77 << 1U, 0xFA, 1U, rx_buffer, 3U, 200U);
+        HAL_I2C_Mem_Read(&hi2c1, 0x77U << 1U, 0xFAU, 1U,
+                         rx_buffer, 3U, 200U);
 
-          adc_temp = (int32_t *)((((uint32_t)rx_buffer[0]) << 12U) | (((uint32_t)rx_buffer[1]) << 4U) |
-                                (((uint32_t)rx_buffer[2]) >> 4U));
+        adc_temp =
+            (int32_t)((((uint32_t)rx_buffer[0]) << 12U) |
+                      (((uint32_t)rx_buffer[1]) << 4U) |
+                      (((uint32_t)rx_buffer[2]) >> 4U));
 
-          var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) * ((float)dig_temp2);
-          var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
-                  (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
-                ((float)dig_temp3);
+        var1 = (((float)adc_temp) / 16384.0f -
+                ((float)dig_temp1) / 1024.0f) *
+               ((float)dig_temp2);
+        var2 = ((((float)adc_temp) / 131072.0f -
+                 ((float)dig_temp1) / 8192.0f) *
+                (((float)adc_temp) / 131072.0f -
+                 ((float)dig_temp1) / 8192.0f)) *
+               ((float)dig_temp3);
 
-          t_fine = (int32_t)(var1 + var2);
+        t_fine = (int32_t)(var1 + var2);
 
-          temperature = (float)(((float)t_fine) / 5129.0f);
+        temperature = ((float)t_fine) / 5129.0f;
 
-          // Temperature available for the application.
-      }
-  }
+        // Temperature available for the application.
+    }
+}
 `}
 lang="c"
 meta='title="main.c"'
@@ -86,7 +98,12 @@ En las tres primeras cuestiones la respuesta es editar el código, ya sea por te
 
 Para poder aislar las librerías de un target seguiremos dos reglas: 1) implementaremos la librería en su propia unidad de compilación, es decir, en su propio archivo, y 2) no habrá niguna referencia a ningúna header o función propia del target. Haremos un ejemplo implementando una librería sencilla para el BME280. Para empezar, crearemos dentro de nuestro proyecto una carpeta llamada `bme280`. Dentro de la carpeta `bme280` creamos los ficheros: `bme280.c`, `bme280.h`, y `bme280_interface.h`. Os aclaro ya la duda: no, no se me ha olvidado nombrar el fichero `bme280_interface.c`. Este archivo no formará parte de la librería.
 
-<AuthorNote authorRef={frontmatter.authors[0].author} notes={["Yo suelo poner las carpetas de las librerías dentro de `Application/lib/`."]}/>
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Yo suelo poner las carpetas de las librerías dentro de <code>Application/lib/</code>.",
+  ]}
+/>
 
 El archivo `bme280.h` declarará todas las funciones disponibles en nuestra librería para ser llamadas por nuestra aplicación. Por otro lado, el archivo `bme280.c` implementará la definición de esas funciones y otras auxiliares y privadas que pueda contener la librería. ¿Y qué continene el archivo `bme280_interface.h`? Pues bien, nuestro target, sea cual sea, necesitará comunicarse con el componente BME280 de un modo u otro. En este caso, el BME280 permite comunicación SPI o I2C. En ambos casos, el target debe de poder escribir y leer bytes del componente. El archivo `bme280_interface.h` declarará esas funciones para poder ser llamadas desde la librería. La definición de esas funciones será lo único que estará atado al target en cuestión y será lo único que debamos de editar en caso de migrar la librería a otro target.
 
@@ -96,13 +113,13 @@ Empezamos declarando las funciones disponibles en la librería en el archivo `bm
 
 <Code
   code={`
-  #ifndef BME280_H_
-  #define BME280_H_
+#ifndef BME280_H_
+#define BME280_H_
 
-  void  BME280_init(void);
-  float BME280_get_temperature(void);
+void  BME280_init(void);
+float BME280_get_temperature(void);
 
-  #endif // BME280_H_
+#endif // BME280_H_
 `}
 lang="c"
 meta='title="bme280.h"'
@@ -110,7 +127,14 @@ meta='title="bme280.h"'
 
 La libería que estamos haciendo será muy simple y solo implementaremos una función de inicialiciación sencilla y otra para obtener una medida de temperatura. Ahora vamos a implementar las funciones en el archivo `bme280.c`.
 
-<InfoNote>Para no hacer el post muy *verbose*, me estoy ahorrando los comentarios que documentarían las funciones. En este fichero .h es donde irían esos comentarios. Teniendo disponibles hoy en días tantas herramientas IA, no hay excusa para no documentar tu código.</InfoNote>
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Para no hacer el post muy <i>verbose</i>, me estoy ahorrando los comentarios que documentarían las funciones.",
+    "En este fichero .h es donde irían esos comentarios.",
+    "Teniendo disponibles hoy en días tantas herramientas IA, no hay excusa para no documentar tu código.",
+  ]}
+/>
 
 ## Implementación de la API del driver
 
@@ -118,12 +142,12 @@ El esqueleto del archivo `bme280.c` sería el siguiente:
 
 <Code
   code={`
-  void BME280_init(void) {
-    
-  }
+void BME280_init(void)
+{
+}
 
-float BME280_get_temperature(void) {
-
+float BME280_get_temperature(void)
+{
 }
 `}
 meta='title="bme280.c"'
@@ -134,40 +158,47 @@ Vamos a centrarnos en la inicialización. Como hemos comentado antes, el BME280 
 
 <Code
   code={`
-  void BME280_init(void) {
+void BME280_init(void)
+{
     MX_I2C1_Init();
-  }
-
-float BME280_get_temperature(void) {
-
 }
 `}
-meta='title="bme280.c" ins={2} collapse={4-7}'
-lang="c"
+  meta='title="bme280.c"'
+  lang="c"
 />
 
-Una vez inicializado el periférico, debemos de inicializar el componente. Ahí deberemos de hacer uso de la información provista por el fabricante en su [datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/). Ya os hago yo un resumen: se debe de iniciar el canal de muestreo de la temperatura (que está en sleep por defecto) y leer unas constantes de calibración del componente guardadas en su ROM y que necesitaremos más adelante para poder calcular la temperatura. (El objetivo del post no es aprender a usar el BME280, por lo que me saltaré detalles de su uso que podéis ver en su datasheet.) La inicialización quedaría del siguiente modo:
+Una vez inicializado el periférico, debemos de inicializar el componente. Ahí deberemos de hacer uso de la información provista por el fabricante en su [datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/). Ya os hago yo un resumen: se debe de iniciar el canal de muestreo de la temperatura (que está en sleep por defecto) y leer unas constantes de calibración del componente guardadas en su ROM y que necesitaremos más adelante para poder calcular la temperatura.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "El objetivo del post no es aprender a usar el BME280, por lo que me saltaré detalles de su uso que podéis ver en su datasheet.",
+  ]}
+/>
+
+La inicialización quedaría del siguiente modo:
 
 <Code
   code={`
-  #include "i2c.h"
-  #include <stdint.h>
+#include "i2c.h"
+#include <stdint.h>
 
 #define BME280_TX_BUFFER_SIZE 32U
 #define BME280_RX_BUFFER_SIZE 32U
-#define BME280_TIMEOUT 200U
-#define BME280_ADDRESS 0x77
-#define BME280_REG_CTRL_MEAS 0xF4
-#define BME280_REG_DIG_T 0x88
+#define BME280_TIMEOUT        200U
+#define BME280_ADDRESS        0x77U
+#define BME280_REG_CTRL_MEAS  0xF4U
+#define BME280_REG_DIG_T      0x88U
 
 static uint16_t dig_temp1 = 0U;
-static int16_t dig_temp2 = 0;
-static int16_t dig_temp3 = 0;
+static int16_t  dig_temp2 = 0;
+static int16_t  dig_temp3 = 0;
 
-void BME280_init(void) {
-uint8_t idx = 0;
-uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+void BME280_init(void)
+{
+    uint8_t idx                              = 0U;
+    uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+    uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
 
     HAL_StatusTypeDef status = HAL_ERROR;
 
@@ -175,20 +206,23 @@ uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
 
     tx_buffer[idx++] = 0b10100011;
 
-    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
-                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+    status = HAL_I2C_Mem_Write(
+        &hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+        1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
 
     if (status != HAL_OK)
-      return;
+        return;
 
-    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
-                              rx_buffer, 6U, BME280_TIMEOUT);
+    status = HAL_I2C_Mem_Read(
+        &hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
+        rx_buffer, 6U, BME280_TIMEOUT);
 
     if (status != HAL_OK)
-      return;
+        return;
 
     dig_temp1 = ((uint16_t)rx_buffer[0]);
-    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+    dig_temp1 =
+        dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
 
     dig_temp2 = ((int16_t)rx_buffer[2]);
     dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
@@ -197,71 +231,35 @@ uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
     dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
 
     return;
-
-}
-
-float BME280_get_temperature(void) {
-
 }
 `}
-meta='title="bme280.c" ins={1-14, 16-21, 23-47} collapse={49-52}'
+meta='title="bme280.c"'
 lang="c"
 />
 
 Detallitos a comentar. El valor de calibración que leemos lo guardamos en unas variables llamadas `dig_temp1`, `dig_temp2` y `dig_temp3`. Esas variables están declaradas como globales para que estén luego disponibles para el resto de funciones de la librería. Sin embargo, están declaradas como estáticas para que solo estén accesibles dentro de la librería. Nadie fuera de la librería necesita tener acceso a esos valores ni debe de poder modificarlos.
 
-También vemos que se comprueba el valor devuelto por las instrucciones de I2C y en el caso de algún fallo detenmos la ejecución de la función. No está mal, pero es mejorable. ¿No estaría mejor notificar al que ha llamado a la función `BME280_init` que algo no ha ido bien si ha sido el caso? Para ello, en el archivo `bme280.h` definimos el siguiente `enum`. (Yo los hago utilizando `typedef`. Hay debate sobre el uso de los `typedef` ya que permiten mejorar la legibilidad del código a costa de ocultar detalles. Es cuestión de gustos y de estar todos los miembros del equipo de desarrollo en la misma página.)
+También vemos que se comprueba el valor devuelto por las instrucciones de I2C y en el caso de algún fallo detenemos la ejecución de la función. No está mal, pero es mejorable. ¿No estaría mejor notificar al que ha llamado a la función `BME280_init` que algo no ha ido bien si ha sido el caso? Para ello, en el archivo `bme280.h` definimos el siguiente `enum`.
 
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Yo los hago utilizando <code>typedef</code>.",
+    "Hay debate sobre el uso de los <code>typedef</code> ya que permiten mejorar la legibilidad del código a costa de ocultar detalles.",
+    "Es cuestión de gustos y de estar todos los miembros del equipo de desarrollo en la misma página.",
+  ]}
+/>
+<br />
 <Code
   code={`
-  /**
-   * @file BME280.h
-   * @brief Header file for interfacing with the BME280 sensor.
-   *
-   * This file contains the declarations of the functions required to initialize
-   * and interact with the BME280 sensor, which measures temperature, humidity,
-   * and pressure.
-   */
-
-#ifndef BME280*H*
-#define BME280*H*
-
-/\*\*
-
-- @enum BME280_Status_t
-- @brief Status codes for the BME280 sensor operations.
--
-- This enumeration defines the possible return statuses for operations
-- involving the BME280 sensor.
-  _/
-  typedef enum {
-  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
-  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
-  } BME280_Status_t;
-
-/\*\*
-
-- @brief Initializes the BME280 sensor.
--
-- This function configures the BME280 sensor for operation. It must be called
-- before any other interaction with the sensor.
-  \*/
-  void BME280_init(void);
-
-/\*\*
-
-- @brief Gets the current temperature from the BME280 sensor.
--
-- This function retrieves the temperature value measured by the BME280 sensor.
--
-- @return The temperature in degrees Celsius.
-  \*/
-  float BME280_get_temperature(void);
-
-#endif // BME280*H*
+typedef enum
+{
+    BME280_Status_Ok,
+    BME280_Status_Status_Err,
+} BME280_Status_t;
 `}
-meta='title="bme280.h" ins={13-23} collapse={1-12, 25-42}'
-lang="c"
+  meta='title="bme280.h"'
+  lang="c"
 />
 
 Dos apuntes: suelo añadir el sufijo `_t` a los typedefs para indicar que son un typedef, y los valores o miembros del typedef les añado el prefijo del propio typedef, en este caso `BME280_Status_`. Esto último es para evitar la colisión entre enums de diferentes librerías. Si todo el mundo usara como enum `OK`, estaríamos en problemas.
@@ -270,85 +268,23 @@ Ya podemos modificar tanto la declariación (`bme280.h`) como la definición (`b
 
 <Code
   code={`
-  /**
-   * @file BME280.h
-   * @brief Header file for interfacing with the BME280 sensor.
-   *
-   * This file contains the declarations of the functions required to initialize
-   * and interact with the BME280 sensor, which measures temperature, humidity,
-   * and pressure.
-   */
-
-#ifndef BME280*H*
-#define BME280*H*
-
-/\*\*
-
-- @enum BME280_Status_t
-- @brief Status codes for the BME280 sensor operations.
--
-- This enumeration defines the possible return statuses for operations
-- involving the BME280 sensor.
-  _/
-  typedef enum {
-  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
-  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
-  } BME280_Status_t;
-
-/\*\*
-
-- @brief Initializes the BME280 sensor.
--
-- This function sets up the BME280 sensor for operation by configuring the necessary
-- settings and parameters. It must be called before any other BME280 functions are used.
--
-- @return BME280_Status_t Returns the status of the initialization process.
--                         Possible values are:
--                         - BME280_OK: Initialization was successful.
--                         - BME280_ERROR: An error occurred during initialization.
-  \*/
-  void BME280_init(void);
-  BME280_Status_t BME280_init(void);
-
-/\*\*
-
-- @brief Gets the current temperature from the BME280 sensor.
--
-- This function retrieves the temperature value measured by the BME280 sensor.
--
-- @return The temperature in degrees Celsius.
-  \*/
-  float BME280_get_temperature(void);
-
-#endif // BME280*H*
+BME280_Status_t BME280_init(void);
 `}
-meta='title="bme280.h" ins={31-35, 37} del={36} collapse={1-24, 38-48}'
-lang="c"
+  meta='title="bme280.h"'
+  lang="c"
 />
 
 <br />
 
 <Code
   code={`
-  #include "bme280.h"
-  #include "i2c.h"
-  #include <stdint.h>
+#include "bme280.h"
 
-#define BME280_TX_BUFFER_SIZE 32U
-#define BME280_RX_BUFFER_SIZE 32U
-#define BME280_TIMEOUT 200U
-#define BME280_ADDRESS 0x77
-#define BME280_REG_CTRL_MEAS 0xF4
-#define BME280_REG_DIG_T 0x88
-
-static uint16_t dig_temp1 = 0U;
-static int16_t dig_temp2 = 0;
-static int16_t dig_temp3 = 0;
-
-void BME280_init(void) {
-uint8_t idx = 0;
-uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+BME280_Status_t BME280_init(void)
+{
+    uint8_t idx                              = 0U;
+    uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+    uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
 
     HAL_StatusTypeDef status = HAL_ERROR;
 
@@ -356,22 +292,23 @@ uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
 
     tx_buffer[idx++] = 0b10100011;
 
-    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
-                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
+    status = HAL_I2C_Mem_Write(
+        &hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
+        1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
 
     if (status != HAL_OK)
-      return;
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
-    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
-                              rx_buffer, 6U, BME280_TIMEOUT);
+    status = HAL_I2C_Mem_Read(
+        &hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
+        rx_buffer, 6U, BME280_TIMEOUT);
 
     if (status != HAL_OK)
-      return;
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
     dig_temp1 = ((uint16_t)rx_buffer[0]);
-    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+    dig_temp1 =
+        dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
 
     dig_temp2 = ((int16_t)rx_buffer[2]);
     dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
@@ -379,16 +316,10 @@ uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
     dig_temp3 = ((int16_t)rx_buffer[4]);
     dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
 
-    return;
     return BME_Status_Ok;
-
-}
-
-float BME280_get_temperature(void) {
-
 }
 `}
-meta='title="bme280.c" ins={1, 32, 39, 51} del={31, 38, 50} collapse={5-15, 17-25, 41-49, 53-56}'
+meta='title="bme280.c"'
 lang="c"
 />
 
@@ -396,193 +327,93 @@ Puesto que utilizamos el enum de status, debemos de incluir el fichero `bme280.h
 
 <Code
   code={`
-  #include "bme280.h"
-  #include "i2c.h"
-  #include <stdint.h>
+#define BME280_REG_TEMP 0xFAU
 
-#define BME280_TX_BUFFER_SIZE 32U
-#define BME280_RX_BUFFER_SIZE 32U
-#define BME280_TIMEOUT 200U
-#define BME280_ADDRESS 0x77
-#define BME280_REG_CTRL_MEAS 0xF4
-#define BME280_REG_DIG_T 0x88
-#define BME280_REG_TEMP 0xFA
-
-static uint16_t dig_temp1 = 0U;
-static int16_t dig_temp2 = 0;
-static int16_t dig_temp3 = 0;
-
-void BME280_init(void) {
-uint8_t idx = 0;
-uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
-
-    HAL_StatusTypeDef status = HAL_ERROR;
-
-    MX_I2C1_Init();
-
-    tx_buffer[idx++] = 0b10100011;
-
-    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
-                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
-
-    if (status != HAL_OK)
-      return;
-
-    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_DIG_T, 1U,
-                              rx_buffer, 6U, BME280_TIMEOUT);
-
-    if (status != HAL_OK)
-      return;
-
-    dig_temp1 = ((uint16_t)rx_buffer[0]);
-    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
-
-    dig_temp2 = ((int16_t)rx_buffer[2]);
-    dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
-
-    dig_temp3 = ((int16_t)rx_buffer[4]);
-    dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
-
-    return;
-
-}
-
-float BME280_get_temperature(void) {
-BME280_Status_t BME280_get_temperature(float \*temperature) {
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
-int32_t adc_temp = 0;
-int32_t t_fine = 0;
-float var1 = 0.0;
-float var2 = 0.0;
+BME280_Status_t BME280_get_temperature(float *temperature)
+{
+    uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+    int32_t adc_temp                         = 0;
+    int32_t t_fine                           = 0;
+    float   var1                             = 0.0f;
+    float   var2                             = 0.0f;
 
     HAL_StatusTypeDef status = HAL_ERROR;
 
     *temperature = 0.0f;
 
-    status = HAL_I2C_Mem_Read(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_TEMP, 1U,
-                              rx_buffer, 3U, BME280_TIMEOUT);
+    status = HAL_I2C_Mem_Read(
+        &hi2c1, BME280_ADDRESS << 1U, BME280_REG_TEMP, 1U,
+        rx_buffer, 3U, BME280_TIMEOUT);
 
     if (status != HAL_OK)
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
-    adc_temp = ((int32_t)rx_buffer[0]) << 12U;
-    adc_temp = adc_temp | (((int32_t)rx_buffer[1]) << 4U);
-    adc_temp = adc_temp | (((int32_t)rx_buffer[2]) >> 4U);
+    adc_temp =
+          (int32_t)((((uint32_t)rx_buffer[0]) << 12U) |
+                    (((uint32_t)rx_buffer[1]) << 4U) |
+                    (((uint32_t)rx_buffer[2]) >> 4U));
 
-    var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
-          ((float)dig_temp2);
-    var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
-            (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
-          ((float)dig_temp3);
+    var1 = (((float)adc_temp) / 16384.0 -
+            ((float)dig_temp1) / 1024.0) *
+           ((float)dig_temp2);
+    var2 = ((((float)adc_temp) / 131072.0 -
+             ((float)dig_temp1) / 8192.0) *
+            (((float)adc_temp) / 131072.0 -
+             ((float)dig_temp1) / 8192.0)) *
+           ((float)dig_temp3);
 
     t_fine = (int32_t)(var1 + var2);
 
-    *temperature = (float)(((float)t_fine) / 5129.0);
+    *temperature = ((float)t_fine) / 5129.0f;
 
     return BME280_Status_Ok;
-
 }
 `}
-meta='title="bme280.c" ins={11, 51-82} del={50} collapse={1-10, 12-48}'
+meta='title="bme280.c"'
 lang="c"
 />
 
-Te has dado cuenta, eh. Hemos modificado la firma de la función para que devuelva un status (para saber si ha habido problemas de comunicación con el componente o no) y el resultado lo devolvemos a través del puntero pasado como parámetro a la función. Si estás siguiendo el ejemplo, recuerda de modificar la declaración de la función en el archivo `bme280.h` para que sean iguales.
+Te has dado cuenta, eh. Hemos modificado la firma de la función para que devuelva un status para saber si ha habido problemas de comunicación con el componente o no, y el resultado lo devolvemos a través del puntero pasado como parámetro a la función. Si estás siguiendo el ejemplo, recuerda de modificar la declaración de la función en el archivo `bme280.h` para que sean iguales.
 
 <Code
   code={`
-  /**
-   * @file BME280.h
-   * @brief Header file for interfacing with the BME280 sensor.
-   *
-   * This file contains the declarations of the functions required to initialize
-   * and interact with the BME280 sensor, which measures temperature, humidity,
-   * and pressure.
-   */
-
-#ifndef BME280*H*
-#define BME280*H*
-
-/\*\*
-
-- @enum BME280_Status_t
-- @brief Status codes for the BME280 sensor operations.
--
-- This enumeration defines the possible return statuses for operations
-- involving the BME280 sensor.
-  _/
-  typedef enum {
-  BME280_Status_Ok, /\*\*< Operation completed successfully. _/
-  BME280\*Status_Err, /\*\*< An error occurred during the operation. \_/
-  } BME280_Status_t;
-
-/\*\*
-
-- @brief Initializes the BME280 sensor.
--
-- This function sets up the BME280 sensor for operation by configuring the necessary
-- settings and parameters. It must be called before any other BME280 functions are used.
--
-- @return BME280_Status_t Returns the status of the initialization process.
--                         Possible values are:
--                         - BME280_OK: Initialization was successful.
--                         - BME280_ERROR: An error occurred during initialization.
-  \*/
-  void BME280_init(void);
-  BME280_Status_t BME280_init(void);
-
-/\*\*
-
-- @brief Gets the current temperature from the BME280 sensor.
--
-- This function retrieves the temperature value measured by the BME280 sensor.
--
-- @return The temperature in degrees Celsius.
-  \*/
-- @param[out] temperature Pointer to a float where the temperature value will be stored.
-- @return BME280_Status_t Status of the operation. Returns BME280_OK if successful,
--         otherwise returns an error code.
-  */
-  float BME280_get_temperature(void);
-  BME280_Status_t BME280_get_temperature(float *temperature);
-
-#endif // BME280*H*
+BME280_Status_t BME280_get_temperature(float *temperature);
 `}
-meta='title="bme280.h" ins={46-49, 51} del={44-45, 50} collapse={1-38}'
-lang="c"
+  meta='title="bme280.h"'
+  lang="c"
 />
 
 ¡Genial! Llegados a este punto, en la aplicación podemos tener:
 
 <Code
   code={`
-  #include "bme280.h"
+#include "bme280.h"
 
-int main(void) {
-BME280_Status_t status = BME280_Status_Err;
+int main(void)
+{
+    BME280_Status_t status = BME280_Status_Err;
 
     status = BME280_init();
     if (status != BME280_Status_Ok)
-      Error_Handler();
-
-    while (1) {
-      float temperature = 0.0f;
-
-      status = BME280_get_temperature(&temperature);
-      if (status != BME280_Status_Ok)
         Error_Handler();
 
-      // Temperature available for the application.
-    }
+    while (1)
+    {
+        float temperature = 0.0f;
 
+        status = BME280_get_temperature(&temperature);
+        if (status != BME280_Status_Ok)
+            Error_Handler();
+
+        // Temperature available for the application.
+    }
 }
 `}
 meta='title="main.c"'
 lang="c"
 />
 
-¡Superlimpio! Esto sí es legible. (Ignorad el uso de la función `Error_Handler` de STM32CubeMX/IDE. No suele ser recomendado hacer uso de ella, pero para el ejemplo nos sirve.) Pues ya estaría, ¿no?
+¡Superlimpio! Esto sí es legible. Ignorad el uso de la función `Error_Handler` de STM32CubeMX/IDE. No suele ser recomendado hacer uso de ella, pero para el ejemplo nos sirve. Pues ya estaría, ¿no?
 
 ¡Pues no! Hemos encapsulado nuestras interacciones con el componente en sus propios ficheros. ¡Pero su código aún sigue llamando funciones del target (las funciones HAL)! ¡Si cambiamos de target deberemos de reescribir la librería! Pista: aún no hemos escrito nada en el archivo `bme280_interface.h`. Vamos con ello.
 
@@ -592,64 +423,27 @@ Si nos fijamos en el archivo `bme280.c`, nuestras interacciones con el target so
 
 <Code
   code={`
-  /**
-   * @file bme280_interface.h
-   * @brief Interface for BME280 sensor communication.
-   *
-   * This file contains the function declarations and type definitions
-   * for interfacing with the BME280 sensor over I2C.
-   */
-
-#ifndef BME280*INTERFACE_H*
-#define BME280*INTERFACE_H*
+#ifndef BME280_INTERFACE_H_
+#define BME280_INTERFACE_H_
 
 #include <stdint.h>
 
-/\*\*
+typedef enum
+{
+    BME280_Interface_Ok,
+    BME280_Interface_Err,
+} BME280_Interface_Status_t;
 
-- @brief Enumeration for BME280 interface status.
-  _/
-  typedef enum {
-  BME280_Interface_Ok, /\*\*< Operation successful _/
-  BME280\*Interface_Err /\*\*< Operation failed \_/
-  } BME280_Interface_Status_t;
+BME280_Interface_Status_t
+BME280_Interface_init(uint8_t address, uint32_t timeout);
+BME280_Interface_Status_t
+BME280_Interface_write(uint8_t reg, uint8_t *data,
+                       uint16_t size);
+BME280_Interface_Status_t
+BME280_Interface_read(uint8_t reg, uint8_t *data,
+                      uint16_t size);
 
-/\*\*
-
-- @brief Initialize the BME280 interface.
--
-- @param address The I2C address of the BME280 sensor.
-- @param timeout The timeout duration for the all the interface operations.
-- @return BME280_Interface_Status_t Status of the initialization process.
-  \*/
-  BME280_Interface_Status_t BME280_Interface_init(uint8_t address,
-  uint32_t timeout);
-
-/\*\*
-
-- @brief Write data to a BME280 register.
--
-- @param reg The register address to write to.
-- @param data Pointer to the data to be written.
-- @param size The size of the data to be written.
-- @return BME280_Interface_Status_t Status of the write operation.
-  */
-  BME280_Interface_Status_t BME280_Interface_write(uint8_t reg, uint8_t *data,
-  uint16_t size);
-
-/\*\*
-
-- @brief Read data from a BME280 register.
--
-- @param reg The register address to read from.
-- @param data Pointer to the buffer to store the read data.
-- @param size The size of the data to be read.
-- @return BME280_Interface_Status_t Status of the read operation.
-  */
-  BME280_Interface_Status_t BME280_Interface_read(uint8_t reg, uint8_t *data,
-  uint16_t size);
-
-#endif // BME280*INTERFACE_H*
+#endif // BME280*INTERFACE_H_
 `}
 meta='title="bme280_interface.h"'
 lang="c"
@@ -659,55 +453,52 @@ Si te fijas, también hemos definido un nuevo tipo para los status de la interfa
 
 <Code
   code={`
-  #include "bme280.h"
-  #include "bme280_interface.h"
+#include "bme280.h"
+#include "bme280_interface.h"
 
 #define BME280_TX_BUFFER_SIZE 32U
 #define BME280_RX_BUFFER_SIZE 32U
-#define BME280_TIMEOUT 200U
-#define BME280_ADDRESS 0x77
-#define BME280_REG_CTRL_MEAS 0xF4
-#define BME280_REG_DIG_T 0x88
-#define BME280_REG_TEMP 0xFA
+#define BME280_TIMEOUT        200U
+#define BME280_ADDRESS        0x77U
+#define BME280_REG_CTRL_MEAS  0xF4U
+#define BME280_REG_DIG_T      0x88U
+#define BME280_REG_TEMP       0xFAU
 
 static uint16_t dig_temp1 = 0U;
-static int16_t dig_temp2 = 0;
-static int16_t dig_temp3 = 0;
+static int16_t  dig_temp2 = 0;
+static int16_t  dig_temp3 = 0;
 
-BME280_Status_t BME280_init(void) {
-uint8_t idx = 0;
-uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+BME280_Status_t BME280_init(void)
+{
+    uint8_t idx                              = 0U;
+    uint8_t tx_buffer[BME280_TX_BUFFER_SIZE] = {0};
+    uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
 
-    HAL_StatusTypeDef status = HAL_ERROR;
     BME280_Interface_Status_t status = BME280_Interface_Err;
 
-    status = BME280_Interface_init(BME280_ADDRESS, BME280_TIMEOUT);
-
-    status = HAL_I2C_Mem_Write(&hi2c1, BME280_ADDRESS << 1U, BME280_REG_CTRL_MEAS,
-                              1U, tx_buffer, (uint16_t)idx, BME280_TIMEOUT);
-
-    if (status != HAL_OK)
-      return;
+    status = BME280_Interface_init(BME280_ADDRESS,
+                                   BME280_TIMEOUT);
 
     if (status != BME280_Interface_Ok)
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
     tx_buffer[idx++] = 0b10100011;
 
-    status =
-        BME280_Interface_write(BME280_REG_CTRL_MEAS, tx_buffer, (uint16_t)idx);
+    status = BME280_Interface_write(
+        BME280_REG_CTRL_MEAS, tx_buffer, (uint16_t)idx);
 
     if (status != BME280_Interface_Ok)
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
-    status = BME280_Interface_read(BME280_REG_DIG_T, rx_buffer, 6U);
+    status = BME280_Interface_read(BME280_REG_DIG_T,
+                                   rx_buffer, 6U);
 
     if (status != BME280_Interface_Ok)
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
     dig_temp1 = ((uint16_t)rx_buffer[0]);
-    dig_temp1 = dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
+    dig_temp1 =
+        dig_temp1 | (((uint16_t)rx_buffer[1]) << 8U);
 
     dig_temp2 = ((int16_t)rx_buffer[2]);
     dig_temp2 = dig_temp2 | (((int16_t)rx_buffer[3]) << 8U);
@@ -716,94 +507,111 @@ uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
     dig_temp3 = dig_temp3 | (((int16_t)rx_buffer[5]) << 8U);
 
     return BME280_Status_Ok;
-
 }
 
-BME280_Status_t BME280_get_temperature(float \*temperature) {
-uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
-int32_t adc_temp = 0;
-int32_t t_fine = 0;
-float var1 = 0.0;
-float var2 = 0.0;
+BME280_Status_t BME280_get_temperature(float *temperature)
+{
+    uint8_t rx_buffer[BME280_RX_BUFFER_SIZE] = {0};
+    int32_t adc_temp                         = 0;
+    int32_t t_fine                           = 0;
+    double  var1                             = 0.0;
+    double  var2                             = 0.0;
 
     BME280_Interface_Status_t status = BME280_Interface_Err;
 
     *temperature = 0.0f;
 
-    status = BME280_Interface_read(BME280_REG_TEMP, rx_buffer, 3U);
+    status = BME280_Interface_read(BME280_REG_TEMP,
+                                   rx_buffer, 3U);
 
     if (status != BME280_Interface_Ok)
-      return BME280_Status_Err;
+        return BME280_Status_Err;
 
-    adc_temp = ((int32_t)rx_buffer[0]) << 12U;
-    adc_temp = adc_temp | (((int32_t)rx_buffer[1]) << 4U);
-    adc_temp = adc_temp | (((int32_t)rx_buffer[2]) >> 4U);
+    adc_temp =
+        (int32_t)((((uint32_t)rx_buffer[0]) << 12U) |
+                  (((uint32_t)rx_buffer[1]) << 4U) |
+                  (((uint32_t)rx_buffer[2]) >> 4U));
 
-    var1 = (((float)adc_temp) / 16384.0 - ((float)dig_temp1) / 1024.0) *
-          ((float)dig_temp2);
-    var2 = ((((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0) *
-            (((float)adc_temp) / 131072.0 - ((float)dig_temp1) / 8192.0)) *
-          ((float)dig_temp3);
+    var1 = (((double)adc_temp) / 16384.0 -
+            ((double)dig_temp1) / 1024.0) *
+           ((double)dig_temp2);
+    var2 = ((((double)adc_temp) / 131072.0 -
+             ((double)dig_temp1) / 8192.0) *
+            (((double)adc_temp) / 131072.0 -
+             ((double)dig_temp1) / 8192.0)) *
+           ((double)dig_temp3);
 
     t_fine = (int32_t)(var1 + var2);
 
-    *temperature = (float)(((float)t_fine) / 5129.0);
+    *temperature = ((float)t_fine) / 5129.0f;
 
     return BME280_Status_Ok;
-
 }
 `}
 meta='title="bme280.c"'
 lang="c"
 />
 
-_¡Et voilà!_ Desaparecieron las dependencias del target en la librería. Tenemos una librería que funciona para STM32, para MSP430, para PIC32, etc. En los tres archivos de la libería no debería aparecer nada propio de ningun target. ¿Que és lo único que falta? Pues definir las funciones de la interfaz. Esto es lo único que se debe de migrar/adaptar para cada target. Yo normalmente lo hago dentro de la carpeta `Application/bsp/components/`. Creamos un archivo llamado `bme280_implementation.c` con el siguiente contenido:
+_¡Et voilà!_ Desaparecieron las dependencias del target en la librería. Tenemos una librería que funciona para STM32, para MSP430, para PIC32, etc. En los tres archivos de la libería no debería aparecer nada propio de ningun target. ¿Que és lo único que falta? Pues definir las funciones de la interfaz. Esto es lo único que se debe de migrar/adaptar para cada target.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Yo normalmente lo hago dentro de la carpeta <code>Application/bsp/components/</code>.",
+  ]}
+/>
+
+Creamos un archivo llamado `bme280_implementation.c` con el siguiente contenido:
 
 <Code
   code={`
-  #include "bme280_interface.h"
-  #include "i2c.h"
+#include "bme280_interface.h"
+#include "i2c.h"
 
-static uint8_t device_address = 0U;
+static uint8_t  device_address = 0U;
 static uint32_t device_timeout = 0U;
 
-BME280_Interface_Status_t BME280_Interface_init(uint8_t address,
-uint32_t timeout) {
-
+BME280_Interface_Status_t
+BME280_Interface_init(uint8_t address, uint32_t timeout)
+{
     MX_I2C1_Init();
 
     device_address = address;
     device_timeout = timeout;
 
     return BME280_Interface_Ok;
-
-}
-BME280_Interface_Status_t BME280_Interface_write(uint8_t reg, uint8_t \*data,
-uint16_t size) {
-HAL_StatusTypeDef status = HAL_ERROR;
-
-    status = HAL_I2C_Mem_Write(&hi2c1, device_address << 1U, reg, 1U, data, size,
-                              device_timeout);
-
-    if (status != HAL_OK)
-      return BME280_Interface_Err;
-
-    return BME280_Interface_Ok;
-
 }
 
-BME280_Interface_Status_t BME280_Interface_read(uint8_t reg, uint8_t \*data,
-uint16_t size) {
-HAL_StatusTypeDef status = HAL_ERROR;
+BME280_Interface_Status_t
+BME280_Interface_write(uint8_t reg, uint8_t *data,
+                       uint16_t size)
+{
+    HAL_StatusTypeDef status = HAL_ERROR;
 
-    status = HAL_I2C_Mem_Read(&hi2c1, device_address << 1U, reg, 1U, data, size,
-                              device_timeout);
+    status =
+        HAL_I2C_Mem_Write(&hi2c1, device_address << 1U, reg,
+                          1U, data, size, device_timeout);
 
     if (status != HAL_OK)
-      return BME280_Interface_Err;
+        return BME280_Interface_Err;
 
     return BME280_Interface_Ok;
+}
 
+BME280_Interface_Status_t
+BME280_Interface_read(uint8_t reg, uint8_t *data,
+                      uint16_t size)
+{
+    HAL_StatusTypeDef status = HAL_ERROR;
+
+    status =
+        HAL_I2C_Mem_Read(&hi2c1, device_address << 1U, reg,
+                         1U, data, size, device_timeout);
+
+    if (status != HAL_OK)
+        return BME280_Interface_Err;
+
+    return BME280_Interface_Ok;
 }
 `}
 meta='title="bme280_implementation.c"'
@@ -814,8 +622,8 @@ De este modo en el caso de querer utilizar la librería en otro proyecto o en ot
 
 ## Otros aspectos a terner en cuenta
 
-Con esto hemos visto un ejemplo básico de una libería. Esta implementación es la más sencilla, segura y común. Sin embargo existen diferentes variantes en función de las características de nuestro proyecto. Por ejemplo, hemos visto como realizar una selección de la implementacióne en link time. Es decir, tenemos el archivo `bem280_implementation.c` que provee de las definiciones de las funciones de la interfaz durante el proceso de compilación/linkeo. ¿Qué ocurriría si quisieramos tener dos implementaciones? Una para la comunicación I2C y otra para la comunicación SPI. Pues deberíamos de indicar las implementaciones en run time mediante funciones puntero.
+Con esto hemos visto un ejemplo básico de una libería. Esta implementación es la más sencilla, segura y común. Sin embargo existen diferentes variantes en función de las características de nuestro proyecto. En este ejemplo, hemos visto como realizar una selección de la implementacióne en link time. Es decir, tenemos el archivo `bme280_implementation.c` que provee de las definiciones de las funciones de la interfaz durante el proceso de compilación/linkeo. ¿Qué ocurriría si quisieramos tener dos implementaciones? Una para la comunicación I2C y otra para la comunicación SPI. Pues deberíamos de indicar las implementaciones en run time mediante funciones puntero.
 
-Otro aspecto es que en este ejemplo suponemos que solo hay un solo BME280 en el sistema. ¿Qué ocurriría si tubieramos más de uno? ¿Deberíamos de copiar/pegar código y añadiendole prefijos a las funciones tipo `BME280_1`y `BME280_2`? Pues no. No es lo ideal. Lo que haríamos sería hacer uso de _handlers_ que nos permitieran operar con una misma libería sobre diferentes instancias de un componente.
+Otro aspecto es que en este ejemplo suponemos que solo hay un solo BME280 en el sistema. ¿Qué ocurriría si tubieramos más de uno? ¿Deberíamos de copiar/pegar código y añadiendole prefijos a las funciones tipo `BME280_1`y `BME280_2`? Pues no. No es lo ideal. Lo que haríamos sería hacer uso de _handlers_ que nos permitieran operar con una misma librería sobre diferentes instancias de un componente.
 
 Estos aspectos y como testear nuestra librería antes de incluso tener nuestro hardware disponible da para un tema aparte que veremos en otros posts. De momento, ahora ya no tenemos excusa para no implementar las librerías como es debido. Eso sí, mi primera recomendación (y que paradójicamente he dejado para el final) es que antes que nada te asegures que el fabricante no provea ya una librería oficial para su componente. Esta es la manera más rápida de tener una librería lista para funcionar. Ten pon seguro que la librería que provea el fabricante seguriá una implementacion parecida a la que hemos visto hoy y que nuestra labor será adaptar la parte de implementación de la interfaz a nuestro target o producto.

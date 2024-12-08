@@ -1,7 +1,6 @@
 ---
-const { tags }: { tags: string[] } = Astro.props;
+const { tags } = Astro.props as { tags: string[] };
 ---
-
 {
   tags.length > 0 && (
     <>

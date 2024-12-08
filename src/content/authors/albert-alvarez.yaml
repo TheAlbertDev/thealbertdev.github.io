@@ -1,6 +1,6 @@
 name: Albert
 surname: Álvarez Carulla
-image: ./albert-pic-profile.jpeg
+image: /src/assets/imgs/albert-pic-profile.jpeg
 email: hello@thealbert.dev
 socialMedia:
   - name: Orcid

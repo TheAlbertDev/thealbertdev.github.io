@@ -1,9 +1,44 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getLangFromUrl, useTranslations } from "../i18n/utils";
-
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+import { Code } from "astro-expressive-code/components";
 ---
 
-<Layout title={t("404.title")}>{t("404.message")}</Layout>
+<Layout title="Página no encontrada/Page not found">
+    <div class="flex items-center justify-center h-full w-full"> 
+        <div class="flex flex-col items-center justify-center gap-6">
+            <Code code={`
+void HardFault_Handler(void)
+{
+    Error_t err;
+
+    while (1)
+    {
+        err.code = 404;
+    }
+}
+            `}
+            meta=`title="Page not found" {5}`
+            lang="c"
+            frame="terminal" 
+            />
+            <p class="countdown mt-4">Watchdog timer reset in&nbsp;<span style="--value:6;" />&nbsp;seconds.</p>
+        </div>
+    </div>
+</Layout>
+<script>
+    var countdown = 6;
+    const countdownEl = document.querySelector(".countdown > span") as HTMLElement;
+
+    function decreaseCountDown () {
+        if (countdown === 0) {
+            const languages = navigator.languages || [navigator.language];
+            window.location.href = languages.some(lang => lang.startsWith('es')) ? '/': "/en/";
+            return;
+        }
+        countdown = countdown - 1;
+        console.log(countdownEl);
+        countdownEl.style.setProperty('--value', countdown.toString());
+        setTimeout(decreaseCountDown, 1000);
+    }
+    setTimeout(decreaseCountDown, 1000);
+</script>

@@ -1,14 +1,14 @@
 ---
 import { type CollectionEntry } from "astro:content";
-import { defaultLang } from "../i18n/ui";
+import { defaultLang, languages } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
 import { Icon } from "astro-icon/components";
 
-const { post }: { post: CollectionEntry<"posts"> } = Astro.props;
+const { post } = Astro.props as  { post: CollectionEntry<"posts"> };
 const { lang } = Astro.params;
 const url = Astro.url;
 
-const t = useTranslations(lang ?? defaultLang);
+const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
 
 interface SocialNetwork {
   name: string;

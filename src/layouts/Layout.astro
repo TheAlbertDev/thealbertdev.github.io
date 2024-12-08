@@ -10,46 +10,32 @@ const t = useTranslations(lang);
 
 interface Props {
   title: string;
+  seo?: SEOProps;
 }
 
 const { title, seo } = Astro.props;
-
-interface Props {
-  title: string;
-  seo?: SEOProps;
-}
 ---
 
 <!doctype html>
 <html lang={lang} data-theme="light">
   <head>
+    <SEO
+      {...seo}
+    />
     <meta charset="UTF-8" />
     <meta name="description" content={t("meta.description")} />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧑🏻‍💻</text></svg>">
     <title>{`theAlbertDev | ${title}`}</title>
-    <!-- <SEO
-      {...seo}
-      title={seo?.title ?? SiteData.default.title}
-      description={seo?.description ?? SiteData.default.description}
-      openGraph={seo?.openGraph ?? {
-        basic: {
-          image: SiteData.default.openGraph.image,
-          title: SiteData.default.openGraph.title,
-          type: SiteData.default.openGraph.type,
-          url: SiteData.default.openGraph.url,
-        },
-        optional: {
-          description: SiteData.default.openGraph.description,
-          siteName: SiteData.default.openGraph.title,
-        },
-      }}
-      twitter={seo?.twitter ?? {
-        title: SiteData.default.twitter.title,
-        description: SiteData.default.twitter.description,
-        creator: SiteData.default.twitter.creator,
-      }}
-    /> -->
+    <!-- Google tag (gtag.js) -->
+    <script is:inline type="text/partytown" async src="https://www.googletagmanager.com/gtag/js?id=G-11JE2P4SZ8"></script>
+    <script is:inline type="text/partytown">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-11JE2P4SZ8');
+    </script>
   </head>
   <body class="flex flex-col">
     <div class="drawer">
