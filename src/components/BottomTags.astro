@@ -5,7 +5,7 @@ const { tags } = Astro.props as  { tags: string[] };
   tags.length > 0 && (
     <>
       <div class="w-[20px] h-[5px] bg-base-content mt-16 mb-4"/>
-      <div class="flex gap-x-2 items-center">
+      <div class="flex flex-wrap gap-2 items-center">
         <div class="font-mono text-sm">Tags:</div>
         {tags.map((tag) => (
           <div class="badge badge-outline">{tag}</div>

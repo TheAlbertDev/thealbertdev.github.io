@@ -1,0 +1,761 @@
+---
+title: "CI Server for embedded systems based on Raspberry Pi"
+draft: false
+description: >-
+  In this article, we'll see how to implement a Continuous Integration (CI) server for embedded systems using a Raspberry Pi as a Self-Hosted GitHub Action Runner. We'll go through the step-by-step process of configuring a platform that allows running automated tests, both unit and acceptance tests, for Arduino and STM32 projects, providing almost instant feedback on code implementation. Perfect for educational environments or small development teams.  
+category: en/testing
+tags:
+  - firmware
+  - c
+  - development
+  - testing
+  - educational
+image: /src/assets/imgs/vishnu-mohanan-eaDwf4UAEhk-unsplash.jpg
+authors:
+  - author: albert-alvarez
+pubDate: 2025-06-16T12:00:00.000Z
+translatedPosts:
+  - translatedPost: es/servidor-ci-para-sistemas-embebidos-basado-en-una-raspberry-pi
+---
+import { Image } from 'astro:assets';
+import pastedImage20250610105851 from '../../../assets/imgs/Pasted image 20250610105851.png';
+import pastedImage20250610110306 from '../../../assets/imgs/Pasted image 20250610110306.png';
+import cleanShot20250610111823 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.18.23@2x.png';
+import cleanShot20250610112125 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.21.25@2x.png';
+import cleanShot20250610112154 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.21.54@2x.png';
+import cleanShot20250614155313 from '../../../assets/imgs/CleanShot 2025-06-14 at 15.53.13@2x.png';
+import cleanShot20250615235627 from '../../../assets/imgs/CleanShot 2025-06-15 at 23.56.27@2x.png';
+
+# Introduction
+
+For 6 years, I have been teaching university classes on embedded systems programming. In this class, we learn how to program an STM32F401RE using both Arduino and register-level programming with STM32 HAL libraries. All of this is within the context of the degree to which the course belongs: biomedical engineering.
+
+Something I like to do in my courses is to provide detailed and continuous feedback so that continuous assessment makes sense and is truly applied (not simply assigning weight to various tasks throughout the course without giving feedback that allows students to improve continuously).
+
+In the beginning, when there were only 5-6 students (we're talking about an elective course in the 4th year, so few students reach that level and they're dispersed across multiple subjects), this level of detailed attention was perfectly feasible. However, the course has seen a linear increase in student numbers, reaching 17 students in one academic year. This increase in students and the university's lack of adaptation in human resources (professors) to accommodate this enrollment growth has made it difficult to keep up the pace and provide that level of detail that ensures the proper achievement of competencies worked on in the course, both conceptually and skill-wise.
+
+Therefore, for next year, I've considered adding a topic to the syllabus about testing and continuous integration. Currently, students also work with Git/GitHub in the course, which, surprisingly, they don't see during their degree despite it being an essential tool in the professional world. Not specifically this version control system, but version control at a conceptual level, which is required for medical products developed under ISO-13485, for example.
+
+This topic will be accompanied by a continuous integration testing platform that will also be responsible for testing and validating the developments that students make during the course, giving them almost instant feedback on whether their implementation is correct.
+
+In this article, I'm going to document all the steps followed to implement this testing platform so that anyone who wishes can also implement it. This platform will use a Self-Hosted GitHub Action Runner based on a Raspberry Pi 5 (RPi5), which will be connected to an STMicroelectronics NUCLEO-F401, the evaluation board (EVB) used in the course. The RPi5 will handle running unit tests on the code and will also run acceptance tests on the EVB. Let's see how to do it.
+
+# Requirements
+
+To build this testing platform, we need:
+
+- Raspberry Pi 5 (I have the RPi5, but another model would also work)
+- SD card for the RPi OS
+- SD card adapter for the computer
+- USB transformer to power the RPi
+- NUCLEO-F401 (the same, this is the EVB we use in the course, but you can use whichever you need)
+- USB cable to connect the RPi to the EVB
+- Female-to-male jumper cables to connect the RPi pins to the EVB pins
+- GitHub account
+- Software: Raspberry Pi Imager, Git, GitHub Self-Hosted Runner, PlatformIO CLI, Python
+
+# Configuring the Raspberry Pi
+
+## OS Installation
+
+The first thing we need to do is install the operating system (OS) on the SD card that we'll later use in the RPi. To do this, we download the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) application, which will download the OS and install it on the SD card, allowing us to configure some OS parameters, such as the Wi-Fi connection.
+
+Once downloaded, we open the application and select our RPi model as the device, Raspberry Pi OS Full (64-bit in this case) as the OS, and finally our SD card that we've previously inserted into our computer using the appropriate adapter. In this case, since the RPi won't be doing major computing tasks, my recommendation is to go with the full OS with Desktop.
+
+<Image src={pastedImage20250610105851} alt="Raspberry Pi Imager showing device selection" />
+
+When clicking on <kbd>Next</kbd>, the application will ask if we want to edit some parameter settings.
+
+<Image src={pastedImage20250610110306} alt="Raspberry Pi Imager asking if edit settings" />
+
+In this case, we'll select <kbd>Edit settings</kbd> to configure the RPi name (so we can easily find it on the LAN), Wi-Fi connection, set a username and password, and enable SSH.
+
+<Image src={cleanShot20250610111823} alt="Settings configuration in Raspberry Pi Imager" />
+<Image src={cleanShot20250610112125} alt="Wi-Fi configuration in Raspberry Pi Imager" />
+<Image src={cleanShot20250610112154} alt="SSH configuration in Raspberry Pi Imager" />
+
+Finally, we click on <kbd>Save</kbd> and confirm all the following messages to start the OS download and format the SD card.
+
+## Enabling Remote Desktop
+
+Once the OS is installed, we insert the card into the RPi and connect the power supply using the corresponding transformer. When the system boot is complete, the RPi will directly connect to the Wi-Fi network we configured.
+
+For the first connection to the RPi, we'll use the SSH connection that we previously enabled in Raspberry Pi Imager. To do this, **while being on the same Wi-Fi network as the RPi**, we open a terminal and type:
+
+<Code
+  code={`
+ssh albert@masbcicd.local
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+It will ask for our user password. Once entered, we'll be connected (in your case, instead of `masbcicd.local`, use the name you gave to your RPi).
+
+Normally, I would install VNC to enable a remote desktop on the RPi, but I've recently discovered the free Raspberry Pi Connect service, which will allow us to connect to the RPi from anywhere via a browser (not just from our LAN and a specific application in the case of VNC, unless we configure router ports, dynamic DNS, firewalls, etc.). To use this service, we create an account on [Raspberry Pi Connect](https://www.raspberrypi.com/software/connect/). Once the account is created, we install the application on the RPi and enable it:
+
+<Code
+  code={`
+sudo apt update && sudo apt -y install rpi-connect && rpi-connect on
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Now, we'll link the RPi with our account. On the RPi, we run the command:
+
+<Code
+  code={`
+rpi-connect signin
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+This command will return a link. We open it from the browser on our computer. When opening it, it will ask for a name for the device. We indicate a name, and with that, we'll have our device available for remote connection. Simply, when we want to connect to the device, we go to the [Raspberry Pi Connect](https://connect.raspberrypi.com/) page, sign in, and select our device to connect (we can choose between *Screen sharing* for remote desktop or *Remote shell* for remote terminal).
+
+In general, I'll give all instructions as terminal commands, so the *Remote shell* would be sufficient (in fact, for better connection quality, when I'm on the LAN, I use the SSH connection via terminal), but if you feel more comfortable with the Remote Desktop, feel free to use it 😉
+
+## Installing Applications and Libraries
+
+To run unit tests, we'll need to compile and execute the developed code. In my case, I ask students to create their developments in files with `.cpp` extension instead of `.ino`. That is, they have their main project file with `.ino` extension, but any development is done in separate `.cpp` files with their corresponding `.h` header. Why? Because we're in a programming course, and my goal is that Arduino's "magic" doesn't mask aspects of C/C++ language that might later surprise them. To compile those C/C++ files, we'll use GNU gcc/g++ and [CppUTest](https://cpputest.github.io) as the testing suite. Let's install it with the following command:
+
+<Code
+  code={`
+sudo apt install -y build-essential
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+It's likely that if you followed my recommendation to install the OS with all the recommended features included (Full), you already have these tools installed. This won't be the case with CppUTest. To install it, run the following command:
+
+<Code
+  code={`
+sudo apt install -y autoconf libtool && sudo git clone https://github.com/cpputest/cpputest.git /opt/cpputest && sudo chown -R $(whoami):$(whoami) /opt/cpputest && cd /opt/cpputest && autoreconf . -i && ./configure && make tdd && echo 'export CPPUTEST_HOME=/opt/cpputest' >> ~/.bashrc && source ~/.bashrc
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+With this, we now have the tools to run unit tests. Let's now move on to acceptance tests. These require that the code be compiled and flashed to the EVB, and then the RPi physically verifies that the tested application meets the project requirements.
+
+I was writing this document as I was configuring the RPi, and after banging my head against the wall 1000 times, we'll use PlatformIO CLI to compile and flash Arduino code to the microcontroller. Currently, the Arduino/STM32 tooling support for the RPi architecture is poor (if not nonexistent). PlatformIO offers a CLI that can run on the RPi and gives us all the tools we need.
+
+For STM32CubeIDE/MX projects, the story repeats itself: there's no support for the RPi architecture. But good news! PlatformIO CLI already includes a tool to flash an STM32, and we just need to run the following command when needed:
+
+<Code
+  code={`
+~/.platformio/packages/tool-stm32flash/stm32flash -w firmware.bin -v -g 0x08000000 $(ls /dev/ttyACM* 2>/dev/null | head -n 1)
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+If the `~/.platformio/packages/tool-stm32flash` folder doesn't appear, as soon as you create a PlatformIO CLI project for STM32, it will be downloaded. If you're impatient and want to force it, once you've installed PlatformIO CLI with the commands below, run these commands:
+
+<Code
+  code={`
+cd ~
+mkdir test
+pio project init -d test -b nucleo_f401re
+cd test
+echo "debug_tool = stlink" >> platformio.ini
+pio run --target upload
+cd ..
+rm -rf test
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Or there's also the option to use OpenOCD, which also comes with PlatformIO CLI and is the option I'll use because it allows using `.elf` files. In this case, the command would be:
+
+<Code
+  code={`
+openocd -d2 -s ~/.platformio/packages/tool-openocd/openocd/scripts -f ~/.platformio/packages/tool-openocd/openocd/scripts/board/st_nucleo_f4.cfg -c "program \"$(readlink -f stm32cube/blink_led/Debug/*.elf | head -n1)\" verify reset; shutdown;"
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Adjust the path to the `.elf` file for your application, as well as the configuration file for your board. Students will include the `.elf` file from their compilations in their version control systems.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "I agree that this isn't the most purist option, that this way there can be an inconsistency between the source code and the generated binary, and that ideally, we would install all the ARM tooling on the RPi and change the configuration of STM32CubeIDE projects to be Make-based projects instead of CLT.","But for an introductory course, I prefer to keep the CLT projects and avoid having students mess with the Makefile. It's a matter of tradeoff and intended use.",
+  ]}
+/>
+
+To install PlatformIO CLI, we simply follow the documentation instructions:
+
+<Code
+  code={`
+curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
+python3 get-platformio.py
+echo 'export PATH=$HOME/.platformio/penv/bin:$PATH' >> ~/.bashrc && source ~/.bashrc
+curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules | sudo tee /etc/udev/rules.d/99-platformio-udev.rules
+sudo service udev restart
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Once installed, with the command `pio boards ststm32`, we can get all the PlatformIO-compatible boards from the STM32 family (don't include `ststm32` in the command to see all boards). This way, we can know the ID of our board, which in my case is the `nucleo_f401re`. With this, we've covered compiling Arduino projects and flashing both Arduino and STM32CubeIDE/MX projects.
+
+Now we're missing the cherry on top: the Self-Hosted GitHub Action service. In my case, the self-hosted runner will be associated with the GitHub organization I use with GitHub Classroom. From that organization's settings, we go to Actions > Runners and click on New runner > New self-hosted runner. We choose Linux as the image and ARM64 as the architecture. We follow the instructions that appear on the web, and voilà, we have the self-hosted runner installed. Typically, the RPi operates 24/7 without us having to monitor it. Therefore, it's more interesting to run the self-hosted runner as a service. To do this, instead of running `./run-sh` from the documentation, we execute:
+
+<Code
+  code={`
+sudo ./svc.sh install
+sudo ./svc.sh start
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+In the future, we could stop the service with `sudo ./svc.sh stop` and remove it with `sudo ./svc.sh uninstall`.
+
+If everything went well, our self-hosted runner should appear as active and waiting.
+
+<Image src={cleanShot20250614155313} alt="Self-hosted runner active on GitHub" />
+
+With this, we have everything ready.
+
+# Hello, World!
+
+Now that we have everything ready, we just need to make the tests. These are specific to each application, so your tests and mine might be as different as chalk and cheese. Therefore, we'll simply make a basic example with a blinking LED where we'll do unit tests on the Arduino files, acceptance tests on the Arduino application, unit tests on the STM32CubeIDE files, and acceptance tests on the STM32CubeIDE/MX application.
+
+You can find the example repository here:
+
+https://github.com/TheAlbertDev/example-self-hosted-runner
+
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "The example repository is in my personal account and doesn't have access to any self-hosted runner for security reasons. Keep this in mind for your own self-hosted runners and don't make them accessible to public repositories. Someone could fork, make a PR to your repository, and if you have GitHub Actions configured to run when a PR is made, malicious code could be executed on your self-hosted runner.",
+    "Also, it's appreciated if you show love to the repository with a ⭐"
+  ]}
+/>
+
+The directory structure is as follows:
+
+<Code
+  code={`
+.
+├── .devcontainer
+├── .github
+│   └── workflows
+├── arduino
+│   └── blink_led
+├── stm32cube
+│   └── blink_led
+└── test
+    ├── arduino
+    │   └── blink_led
+    │       ├── acceptance
+    │       └── unit
+    └── stm32cube
+        └── blink_led
+            ├── acceptance
+            └── unit
+`}
+  meta="showLineNumbers=false"
+  frame="none"
+/>
+
+In the `arduino` and `stm32cube` folders, there are folders for the different projects of the respective platforms. On the other hand, we have the `test` folder where once again there are two folders, `arduino` and `stm32cube`, to collect the tests for each platform that are also organized by projects. Within each project, tests are separated into unit and acceptance in their respective folders.
+
+Then we have the `.devcontainer` folder, which serves to configure a development container for VSCode (and there I have CppUTest available to run tests locally), and the `.github` folder, which contains the GitHub Actions that will run on our self-hosted runner.
+
+In this example, the project is the same for both platforms: making the EVB's LED blink every 1 second. In the unit tests, we'll test that the functions to turn on/off the LED are called correctly from the LED management module we'll create, and in the acceptance tests, we'll load the firmware on the device and physically verify that the signal that turns on/off the LED toggles every 1 second.
+
+## Arduino Project
+
+Adding testing forces you to organize your code following good practices. These practices are outside the scope of this post, but as a summary: we'll move all LED management to a file separate from the main sketch. We'll do this in the `led.cpp` and `led.h` files. They're very simple:
+
+<Code
+  code={`
+#ifndef LED_H__
+#define LED_H__
+
+void LED_config(void);
+void LED_turn_off(void);
+void LED_turn_on(void);
+
+#endif /* LED_H__ */
+`}
+  title="arduino/blink_led/led.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "Arduino.h"
+
+void LED_config(void) {
+    pinMode(13, OUTPUT);
+    digitalWrite(13, LOW);
+}
+
+void LED_turn_on(void) {
+    digitalWrite(13, HIGH);
+}
+
+void LED_turn_off(void) {
+    digitalWrite(13, LOW);
+}
+`}
+  title="arduino/blink_led/led.cpp"
+  lang="cpp"
+/>
+
+Then in the main sketch, we simply use these functions:
+
+<Code
+  code={`
+#include "led.h"
+
+void setup() { LED_config(); }
+
+void loop() {
+    LED_turn_on();
+    delay(1000);
+    LED_turn_off();
+    delay(1000);
+}
+`}
+  title="arduino/blink_led/blink_led.ino"
+  lang="cpp"
+/>
+
+### Unit Tests
+
+The unit tests are configured in the `test/arduino/blink_led/unit` folder. I won't put all the contents of the makefile and other files here. You can see them directly in the [repository](https://github.com/TheAlbertDev/example-self-hosted-runner/tree/main/test/arduino/blink_led/unit).
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "As I said before, how to use test suites is not the object of this post, but if you want to see more about unit tests for embedded systems, I will never tire of recommending the book \"Test-Driven Development for Embedded C\" by James W. Grenning. If you consider yourself or want to be an embedded systems engineer, this book must absolutely be on your bookshelf. I don't know how many times I've read it. It's pure gold.",
+  ]}
+/>
+
+The most noteworthy aspect of unit tests is that we need to mock the calls to the `pinMode` and `digitalWrite` functions to test that they are called correctly when appropriate. We do this with the following auxiliary files in the tests:
+
+<Code
+  code={`
+#ifndef Arduino_H__
+#define Arduino_H__
+
+#define OUTPUT 0x1
+#define LOW 0x0
+#define HIGH 0x1
+  
+void pinMode(uint32_t ulPin, uint32_t ulMode);
+void digitalWrite(uint32_t ulPin, uint32_t ulVal);
+
+#endif /* Arduino_H__ */
+`}
+  title="test/arduino/blink_led/unit/mocks/Arduino.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "Arduino.h"
+#include "CppUTestExt/MockSupport.h"
+
+void pinMode(uint32_t ulPin, uint32_t ulMode) {
+    mock()
+        .actualCall("pinMode")
+        .withParameter("ulPin", ulPin)
+        .withParameter("ulMode", ulMode);
+
+    return;
+}
+
+void digitalWrite(uint32_t ulPin, uint32_t ulVal) {
+    mock()
+        .actualCall("digitalWrite")
+        .withParameter("ulPin", ulPin)
+        .withParameter("ulVal", ulVal);
+
+    return;
+}
+`}
+  title="test/arduino/blink_led/unit/mocks/Arduino.c"
+  lang="cpp"
+/>
+
+This way, in the unit tests, we can check that when configuring the pin or turning the LED on/off, the correct functions are called with the relevant parameters.
+
+<Code
+  code={`
+#include "led.h"
+#include "Arduino.h"
+#include "CppUTest/TestHarness.h"
+#include "CppUTestExt/MockSupport.h"
+#include <stdexcept>
+#include <stdio.h>
+
+TEST_GROUP(LED__management){};
+
+TEST(LED__management, Pin__configuration) {
+    mock()
+        .expectOneCall("pinMode")
+        .withParameter("ulPin", 13)
+        .withParameter("ulMode", OUTPUT);
+
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", LOW);
+
+    LED_config();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+TEST(LED__management, Turn__on) {
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", HIGH);
+
+    LED_turn_on();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+TEST(LED__management, Turn__off) {
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", LOW);
+
+    LED_turn_off();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+`}
+  title="test/arduino/blink_led/unit/led.test.cpp"
+  lang="cpp"
+/>
+
+Once the tests are implemented, we proceed to automate them in GitHub Actions. For this, we have the `.github/workflows/arduino_blink_led_check.yaml` file.
+
+<Code
+  code={`
+name: 🔌 Check Arduino Blink LED
+on:
+  pull_request:
+    paths:
+      - arduino/blink_led/**
+      - test/arduino/blink_led/**
+
+jobs:
+  check_arduino_project:
+    name: 🔧 Build Arduino Project
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout code 
+        uses: actions/checkout@v4
+      - name: 🛠️ Set up PlatformIO CLI project
+        run: |
+          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          pio project init -d build -b nucleo_f401re
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          echo "debug_tool = stlink" >> platformio.ini
+          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
+          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+      - name: 🏗️ Build PlatformIO CLI project
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          pio run
+  unit_tests:
+    name: 🧪 Unit tests
+    runs-on: self-hosted
+    env:
+      CPPUTEST_HOME: /opt/cpputest
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🧬 Run unit tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/unit
+        make 
+`}
+  title=".github/workflows/arduino_blink_led_check.yaml"
+  lang="yaml"
+/>
+
+The tests are executed in the `unit_tests` job. There's also a job called `check_arduino_project` that simply compiles the Arduino project. This last step is implicitly done during the acceptance tests, but I like to have a separate job just to show students that their project doesn't compile correctly if that's the case. In this case, you can see how that job simply creates the project in PlatformIO CLI, converts the main sketch to `.cpp`, and compiles.
+
+In the unit tests automation, we simply enter the `test/arduino/blink_led/unit` folder and run the `make` command.
+
+A notable aspect of this GitHub Action is that it runs on the self-hosted runner, as seen in `runs-on`, and that it only triggers on Pull Requests that have modified files of the Arduino `blink_led` project or its tests, as seen in `paths`.
+
+### Acceptance Tests
+
+On the other hand, we have the acceptance tests in the `test/arduino/blink_led/acceptance` folder. In these tests, we'll compile and load the firmware using PlatformIO CLI, and from Python, we'll check that the voltage on the pin controlling the LED toggles with a period of 1 second. For Python, I use the pytest test suite. [Here](https://github.com/TheAlbertDev/example-self-hosted-runner/tree/main/test/arduino/blink_led/acceptance) you can see the files.
+
+We add an additional job to the previous GitHub Action:
+
+<Code
+  code={`
+  acceptance_tests:
+    name: ✅ Acceptance tests
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      - name: 🛠️ Set up PlatformIO CLI project
+        run: |
+          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          pio project init -d build -b nucleo_f401re
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          echo "debug_tool = stlink" >> platformio.ini
+          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
+          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+      - name: 🏗️ Build and upload PlatformIO CLI project
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          pio run --target upload
+      - name: 🧬 Run acceptance tests
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/acceptance
+          /usr/bin/python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          python -m pytest -v
+`}
+  meta="startLineNumber=40"
+  title=".github/workflows/arduino_blink_led_check.yaml"
+  lang="yaml"
+/>
+
+In this job, we repeat the creation of the PlatformIO CLI project, compile and load the firmware, and finally run the acceptance tests.
+
+## STM32CubeIDE/MX Project
+
+For the STM32CubeIDE/MX project, it's the same as with Arduino. In a separate module, we manage the LED:
+
+<Code
+  code={`
+#ifndef INC_LED_H_
+#define INC_LED_H_
+
+void LED_turn_off(void);
+void LED_turn_on(void);
+
+#endif /* INC_LED_H_ */
+`}
+  title="stm32cube/blink_led/Core/Inc/led.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "main.h"
+
+void LED_turn_on(void) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+
+void LED_turn_off(void) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+}
+`}
+  title="stm32cube/blink_led/Core/Src/led.c"
+  lang="cpp"
+/>
+
+The only differences with the Arduino code are that in this case, we save ourselves the `LED_config` function since STM32CubeMX already configures it for us in the `MX_GPIO_Init` function, and that instead of calling the Arduino functions to turn the LED on/off, we use the STM32 HAL functions.
+
+We then call these functions in the `main.c` file.
+
+### Unit Tests
+
+As with Arduino, we need to mock the HALs in the tests:
+
+<Code
+  code={`
+#ifndef Main_H__
+#define Main_H__
+
+#include <stdint.h>
+
+#define GPIO_PIN_RESET 0x0
+#define GPIO_PIN_SET 0x1
+#define LD2_Pin 0x0020
+#define LD2_GPIO_Port ((GPIO_TypeDef*)0x40020000)
+
+typedef uint32_t GPIO_TypeDef;
+typedef uint32_t GPIO_PinState;
+
+void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin,
+GPIO_PinState PinState);
+
+#endif /* Main_H__ */
+`}
+  title="test/stm32cube/blink_led/unit/mocks/main.h"
+  lang="c"
+/>
+<br/>
+<Code
+  code={`
+#include "main.h"
+#include "CppUTestExt/MockSupport_c.h"
+
+void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin,
+GPIO_PinState PinState) {
+    mock_c()
+        ->actualCall("HAL_GPIO_WritePin")
+        ->withPointerParameters("GPIOx", GPIOx)
+        ->withUnsignedIntParameters("GPIO_Pin", GPIO_Pin)
+        ->withUnsignedLongIntParameters("PinState", PinState);
+
+    return;
+}
+`}
+  title="test/stm32cube/blink_led/unit/mocks/main.c"
+  lang="c"
+/>
+
+Notice that this time the mock is done in C and not C++ like in Arduino. Now from the unit tests we simply do:
+
+<Code
+  code={`
+#include "CppUTest/TestHarness.h"
+#include "CppUTestExt/MockSupport.h"
+#include <stdexcept>
+#include <stdio.h>
+
+extern "C" {
+#include "led.h"
+#include "main.h"
+}
+
+TEST_GROUP(LED__management){};
+
+TEST(LED__management, Turn__on) {
+    mock()
+        .expectOneCall("HAL_GPIO_WritePin")
+        .withParameter("GPIOx", LD2_GPIO_Port)
+        .withParameter("GPIO_Pin", LD2_Pin)
+        .withParameter("PinState", GPIO_PIN_SET);
+
+    LED_turn_on();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+TEST(LED__management, Turn__off) {
+    mock()
+        .expectOneCall("HAL_GPIO_WritePin")
+        .withParameter("GPIOx", LD2_GPIO_Port)
+        .withParameter("GPIO_Pin", LD2_Pin)
+        .withParameter("PinState", GPIO_PIN_RESET);
+
+    LED_turn_off();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+`}
+  title="test/stm32cube/blink_led/unit/led.test.cpp"
+  lang="cpp"
+/>
+
+Now we just need to create the GitHub Action that executes the unit tests. This will be exactly the same as the Arduino one, just in a different folder and without a compilation job. The GitHub Action trigger also checks if files of the STM32CubeIDE/MX `blink_led` project or its tests have been modified to launch or not.
+
+<Code
+  code={`
+name: 🔌 Check STM32Cube Blink LED
+on:
+  pull_request:
+    paths:
+      - stm32cube/blink_led/**
+      - test/stm32cube/blink_led/**
+
+jobs:
+  unit_tests:
+    name: 🧪 Unit tests
+    runs-on: self-hosted
+    env:
+      CPPUTEST_HOME: /opt/cpputest
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🧬 Run unit tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/unit
+        make
+`}
+  title=".github/workflows/stm32cube_blink_led_check.yaml"
+  lang="yaml"
+/>
+
+### Acceptance Tests
+
+For the acceptance tests, we'll reuse the Arduino part. Simply, in the GitHub Action, we'll load the `.elf` file into the microcontroller using OpenOCD.
+
+<Code
+  code={`
+  acceptance_tests:
+    name: ✅ Acceptance tests
+    runs-on: self-hosted
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🏗️ Upload .elf file
+      run: |
+        openocd -d2 -s ~/.platformio/packages/tool-openocd/openocd/scripts -f ~/.platformio/packages/tool-openocd/openocd/scripts/board/st_nucleo_f4.cfg -c "program \"$(readlink -f stm32cube/blink_led/Debug/*.elf | head -n1)\" verify reset; shutdown;"
+    - name: 🧬 Run acceptance tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/acceptance
+        /usr/bin/python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements.txt
+        python -m pytest -v
+`}
+  meta="startLineNumber=21"
+  title=".github/workflows/stm32cube_blink_led_check.yaml"
+  lang="yaml"
+/>
+<br/>
+<br/>
+# Conclusions
+
+With all this, we have our self-hosted runner and repository configured to run automated tests for our embedded systems developments. Now, every time we have a Pull Request that modifies files of the projects or tests, the tests of the relevant platforms are launched, and the results appear in the Pull Request itself.
+
+<Image src={cleanShot20250615235627} alt="Test results in GitHub Pull Request" />
+
+Since this helps me to test my students' development during the course, I'll now adapt the tests to assign a score to Pull Requests based on which tests pass successfully and which don't using the GitHub Actions from [GitHub Classroom Resources](https://github.com/classroom-resources). But that's for another article.
+
+Obviously, this approach we've followed serves the application for which it was designed: evaluating student developments. In a professional production environment, other configurations/functionalities should be considered, such as implementing all this on a workbench computer with an architecture compatible with all compilation and flashing tools, compiling on the runner itself, compiling production and development versions, attaching artifacts to the deployment server, firmware and encrypting generated binaries, generating automated release notes, version management, considering security aspects, setting PR protection policies, etc. But with this example, we've seen how with a low budget and little time we were able to implement a continuous integration server for our embedded systems developments.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Friendly advice: if you value your time, now is the moment to turn off the RPi, extract the SD card and save an image of it for \"in case of accident\" to be able to recover the system and not have to reconfigure everything. Consider yourself warned...",
+  ]}
+/>

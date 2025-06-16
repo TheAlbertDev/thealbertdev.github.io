@@ -1,6 +1,6 @@
 ---
 import { defaultLang, languages } from "../i18n/ui";
-import { getCollection, getEntry } from "astro:content";
+import { getEntry } from "astro:content";
 import {
   getLangFromUrl,
   useTranslatedPath,
@@ -24,7 +24,7 @@ const translatedPostSlugs: Partial<typeof languages> = {};
 try {
   post = await getEntry("posts", postSlug.replace(/\/+$/, ""));
   post!.data.translatedPosts?.forEach((tp) => {
-    const [language, slug] = tp.translatedPost.slug.split("/");
+    const [language, slug] = tp.  translatedPost.id.split("/");
     translatedPostSlugs[language as keyof typeof languages] = slug;
   });
 } catch (e){

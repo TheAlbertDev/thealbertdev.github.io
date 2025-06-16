@@ -1,0 +1,763 @@
+---
+title: "Servidor CI para sistemas embebidos basado en una Raspberry Pi"
+draft: false
+description: >-
+  En esta entrada veremos cómo implementar un servidor de integración continua (CI) para sistemas embebidos utilizando una Raspberry Pi como Self-Hosted GitHub Action Runner. Veremos paso a paso cómo configurar una plataforma que permite realizar tests automatizados tanto unitarios como de aceptación para proyectos de Arduino y STM32, proporcionando feedback casi instantáneo sobre la implementación de código. Ideal para entornos educativos o pequeños equipos de desarrollo.
+category: es/testing
+tags:
+  - firmware
+  - c
+  - desarrollo
+  - testing
+  - educación
+image: /src/assets/imgs/vishnu-mohanan-eaDwf4UAEhk-unsplash.jpg
+authors:
+  - author: albert-alvarez
+pubDate: 2025-06-16T12:00:00.000Z
+translatedPosts:
+  - translatedPost: en/ci-server-for-embedded-systems-based-on-raspberry-pi
+---
+import { Image } from 'astro:assets';
+import pastedImage20250610105851 from '../../../assets/imgs/Pasted image 20250610105851.png';
+import pastedImage20250610110306 from '../../../assets/imgs/Pasted image 20250610110306.png';
+import cleanShot20250610111823 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.18.23@2x.png';
+import cleanShot20250610112125 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.21.25@2x.png';
+import cleanShot20250610112154 from '../../../assets/imgs/CleanShot 2025-06-10 at 11.21.54@2x.png';
+import cleanShot20250614155313 from '../../../assets/imgs/CleanShot 2025-06-14 at 15.53.13@2x.png';
+import cleanShot20250615235627 from '../../../assets/imgs/CleanShot 2025-06-15 at 23.56.27@2x.png';
+
+## Introducción
+
+Desde hace 6 años que doy clase en la universidad sobre programación en sistemas embebidos. En esa clase aprendemos cómo programar un STM32F401RE tanto en Arduino como a nivel de registros utilizando las HAL de STM32. Todo ello, en el contexto en el que se enmarca el ámbito del grado al que pertenece la asignatura: ingeniería biomédica.
+
+Algo que me gusta hacer en mis asignaturas es dar feedback detallado y continuo de tal manera que la evaluación continua tenga sentido y sea realmente aplicada (y no simplemente dar un peso de evaluación a varias tareas durante el curso pero sin dar feedback que permita ir mejorando al estudiante de manera continua).
+
+Al principio, cuando eran 5/6 estudiantes (estamos hablando de una asignatura optativa de 4º, por lo que los estudiantes que llegan a 4º son pocos y encima se disgregan en múltiples asignaturas) era perfectamente viable esa atención al detalle. Sin embargo, la asignatura ha visto incrementado su número de estudiantes de manera lineal hasta llegar a tener en uno de los años 17 estudiantes. Ese aumento de estudiantes y la no adaptación de recursos humanos (profesores) por parte de la universidad a dicho incremento de personas matriculadas, ha hecho que sea difícil seguir el ritmo y otorgar ese nivel de detalle que me permite asegurar la correcta consecución de las competencias trabajadas en la asignatura tanto a nivel conceptual como de habilidad.
+
+Por ello, para el año que viene me he planteado añadir un tema al temario acerca del testing y la integración continua. Actualmente, en la asignatura también trabajan con Git/GitHub que, sorprendentemente, no lo ven durante el grado siendo una herramienta indispensable en el mundo laboral. Indispensable no este control de versiones en específico, pero sí un control de versiones a nivel conceptual, algo que les es requerido a los productos médicos desarrollados bajo la ISO-13485, por ejemplo.
+
+Este tema irá acompañado de una plataforma de test de integración continua que se encargará además de ir testeando y validando los desarrollos que los estudiantes van realizando durante el curso pudiéndoles dar un feedback casi instantáneo de si su implementación es correcta.
+
+En esta entrada, voy a recoger todos los pasos seguidos para implementar dicha plataforma de test para que cualquiera que lo desee pueda también implementarlo. Dicha plataforma, utilizará un Self-Hosted GitHub Action Runner basado en una Raspberry Pi 5 (RPi5) que a su vez estará conectada a un NUCLEO-F401 de STMicroelectronics, la placa de evaluación (EVB) que se utiliza en la asignatura. La RPi5 se encargará de realizar los tests unitarios del código y a su vez se encargará de hacer los tests de aceptación sobre la EVB. Vamos a ver cómo hacerlo.
+
+## Requerimientos
+
+Para llevar a cabo esta plataforma de test necesitamos:
+
+- Raspberry Pi 5 (yo tengo la RPi5, pero otro modelo también serviría)
+- Tarjeta SD para el SO de la RPi
+- Adaptador de tarjeta SD para el ordenador
+- Transformador USB para alimentar la RPi
+- NUCLEO-F401 (lo mismo, esta es la EVB que utilizamos en el curso, pero tu utiliza la que necesites)
+- Cable USB para conectar la RPi con la EVB
+- Cables jumper hembra-macho para conectar los pines de la RPi con los de la EVB
+- Cuenta en GitHub
+- Software: Raspberry Pi Imager, Git, GitHub Self-Hosted Runner, PlatformIO CLI, Python
+
+## Configuración de la Raspberry Pi
+
+### Instalación del SO
+
+Lo primero que necesitamos hacer es instalar el sistema operativo (SO) en la tarjeta SD que luego utilizaremos en la RPi. Para ello, nos descargamos la aplicación [Raspberry Pi Imager](https://www.raspberrypi.com/software/) la cual se encargará de descargar el SO e instalarlo en la tarjeta SD pudiendo configurar algunos parámetros del SO, como la conexión Wi-Fi.
+
+Una vez descargado, abrimos la aplicación y seleccionamos como dispositivo el modelo RPi que utilicemos, como SO Raspberry Pi OS Full (64-bit en este caso), y finalmente nuestra tarjeta SD que habremos insertado previamente en nuestro ordenador mediante el adaptador correspondiente. En este caso, puesto que la RPi no hará grandes tareas de computación, mi recomendación es ir con el SO completo y con Escritorio.
+
+<Image src={pastedImage20250610105851} alt="Raspberry Pi Imager mostrando selección de dispositivos" />
+
+Al clicar en <kbd>Siguiente</kbd>, la aplicación nos preguntará si queremos editar la configuración de algunos parámetros.
+
+<Image src={pastedImage20250610110306} alt="Raspberry Pi Imager preguntando si editar ajustes" />
+
+En este caso le diremos que <kbd>Editar ajustes</kbd> para configurar el nombre de la RPi (y así poderla encontrar fácilmente en la LAN), la conexión Wi-Fi, establecer un usuario y contraseña, y habilitar el SSH.
+
+<Image src={cleanShot20250610111823} alt="Configuración de ajustes en Raspberry Pi Imager" />
+<Image src={cleanShot20250610112125} alt="Configuración de conexión Wi-Fi en Raspberry Pi Imager" />
+<Image src={cleanShot20250610112154} alt="Configuración de SSH en Raspberry Pi Imager" />
+
+Finalmente, clicamos en <kbd>Guardar</kbd> y confirmamos todos los siguientes mensajes para iniciar la descarga del SO y formatear la tarjeta SD.
+
+### Habilitar Escritorio remoto
+
+Una vez instalado el SO, insertamos la tarjeta en la RPi y conectamos a esta última la alimentación utilizando el transformador correspondiente. Al finalizarse la arrancada del sistema, la RPi se conectará directamente a la red Wi-Fi que le hemos configurado.
+
+Para la primera conexión con la RPi utilizaremos la conexión SSH que hemos habilitado previamente en Raspberry Pi Imager. Para ello, **estando en la misma red Wi-Fi que la RPi**, abrimos un terminal y escribimos:
+
+<Code
+  code={`
+ssh albert@masbcicd.local
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Nos pedirá la contraseña de nuestro usuario. Una vez introducida, ya estaremos dentro (en tu caso, en lugar de `masbcicd.local`, pon el nombre que le hayas dado a tu RPi).
+
+Ahora normalmente instalaría VNC para poder habilitar un Escritorio remoto en la RPi, pero acabo de descubrir que existe el servicio gratuito Raspberry Pi Connect, que nos permitirá conectarnos a la RPi desde cualquier lugar mediante un navegador (y no solo desde nuestra LAN y una aplicación específica en el caso de usar VNC (a no ser que configuremos puertos en el router, DNS dinámicos, firewalls, etc.)). Para usar este servicio, nos creamos una cuenta en [Raspberry Pi Connect](https://www.raspberrypi.com/software/connect/). Una vez creada la cuenta, instalamos la aplicación en la RPi y la habilitamos:
+
+<Code
+  code={`
+sudo apt update && sudo apt -y install rpi-connect && rpi-connect on
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Ahora, enlazaremos la RPi con nuestra cuenta. En la RPi ejecutamos el comando:
+
+<Code
+  code={`
+rpi-connect signin
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Este comando nos devolverá un enlace. Lo abrimos desde el navegador de nuestro ordenador. Al abrirlo, nos pedirá un nombre para el dispositivo. Indicamos un nombre y con ellos ya tendremos nuestro dispositivo disponible para conectarnos remotamente. Simplemente, cuando queramos conectarnos al dispositivo, vamos a la página de [Raspberry Pi Connect](https://connect.raspberrypi.com/), iniciamos sesión, y seleccionamos nuestro dispositivo para conectarnos (podemos escoger entre *Screen sharing* para hacer un Escritorio Remoto o *Remote shell* para tener un terminal remoto).
+
+Por lo general, todas las instrucciones las daré como comando de terminal, por lo que el *Remote shell* sería suficiente (de hecho, para una mayor calidad de conexión, cuando estoy en la LAN utilizo la conexión SSH mediante terminal), pero si te sientes más cómodo con el Escritorio Remoto, siéntete libre de usarlo 😉
+
+###  Instalación de aplicaciones y librerías
+
+Para realizar los test unitarios necesitaremos poder compilar y ejecutar el código desarrollado. En mi caso, les pido a los estudiantes que realicen los desarrollos en ficheros con extensión `.cpp` y no `.ino`. Es decir, tienen su archivo principal del proyecto con extensión `.ino`, pero cualquier desarrollo se hace en ficheros `.cpp` aparte y se incluye su correspondiente encabezado `.h`. ¿Por qué? Porque estamos en un curso de programación y mi objetivo es que la "magia" de Arduino no enmascare aspectos del lenguaje C/C++ que luego les pille por sorpresa. Para compilar esos ficheros C/C++ utilizaremos GNU gcc/g++ y como suite de test [CppUTest](https://cpputest.github.io). Vamos a instalarlo con el siguiente comando:
+
+<Code
+  code={`
+sudo apt install -y build-essential
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Es probable que si has seguido mi recomendación de instalar el SO con todas las características recomendadas ya incluidas (Full), ya tengas las herramientas instaladas. No será el caso con CppUTest. Para instalarlo, ejecuta el siguiente comando:
+
+<Code
+  code={`
+sudo apt install -y autoconf libtool && sudo git clone https://github.com/cpputest/cpputest.git /opt/cpputest && sudo chown -R $(whoami):$(whoami) /opt/cpputest && cd /opt/cpputest && autoreconf . -i && ./configure && make tdd && echo 'export CPPUTEST_HOME=/opt/cpputest' >> ~/.bashrc && source ~/.bashrc
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Con esto ya tendríamos las herramientas para poder hacer tests unitarios. Vamos ahora con los tests de aceptación. Estos requieren que el código sea compilado y flasheado en la EVB y luego que la RPi compruebe físicamente que la aplicación testeada cumple con los requerimientos del proyecto.
+
+Iba escribiendo este documento a medida que iba configurando la RPi y después de darme 1000 cabezazos contra la pared, utilizaremos PlatformIO CLI para compilar y flashear código de Arduino en el microcontrolador. Actualmente el soporte del tooling de Arduino/STM32 para la arquitectura de la RPi es pobre (por no decir nula). PlatformIO ofrece un CLI que puede ejecutarse en la RPi y nos ofrece todas las herramientas que necesitamos.
+
+Para el caso de los proyectos de STM32CubeIDE/MX, la historia se repite: no hay soporte para la arquitectura de la RPi. ¡Pero buenas noticias! PlatformIO CLI ya incluye un tool para poder flashear un STM32 y solo deberemos de ejecutar el siguiente comando cuando toque:
+
+<Code
+  code={`
+~/.platformio/packages/tool-stm32flash/stm32flash -w firmware.bin -v -g 0x08000000 $(ls /dev/ttyACM* 2>/dev/null | head -n 1)
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+
+Si no te aparece la carpeta `~/.platformio/packages/tool-stm32flash`, en cuanto hagas un proyecto en PlatformIO CLI para STM32, se descargará. Si eres un impaciente y quieres forzarlo, una vez hayas instalado PlatformIO CLI con los comandos de más abajo, ejecuta los comandos:
+
+<Code
+  code={`
+cd ~
+mkdir test
+pio project init -d test -b nucleo_f401re
+cd test
+echo "debug_tool = stlink" >> platformio.ini
+pio run --target upload
+cd ..
+rm -rf test
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+O también está la opción de usar OpenOCD que viene también con PlatformIO CLI y que es la opción que yo usaré por permitir usar ficheros `.elf`. En este caso, el comando sería:
+
+<Code
+  code={`
+openocd -d2 -s ~/.platformio/packages/tool-openocd/openocd/scripts -f ~/.platformio/packages/tool-openocd/openocd/scripts/board/st_nucleo_f4.cfg -c "program \"$(readlink -f stm32cube/blink_led/Debug/*.elf | head -n1)\" verify reset; shutdown;"
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Ajusta el path al fichero `.elf` a tu aplicación, así como el archivo de configuración de tu placa. Los estudiantes incluirán el fichero `.elf` de las compilaciones en sus sistemas de control de versiones.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Estoy de acuerdo que no es la opción más purista, que de este modo puede generarse una inconsistencia entre el código fuente y el binario generado, y que lo ideal sería instalar toooodo el tooling de ARM en la RPi y cambiar la configuración de los proyectos de STM32CubeIDE para que sean proyectos basados en Make y no CLT.", "Pero para un curso de iniciación, prefiero mantener los proyectos CLT y evitar a los estudiantes tener que trastear con el Makefile. Es una cuestión de tradeoff e intended use.",
+  ]}
+/>
+
+Para instalar PlatformIO CLI, simplemente seguimos las instrucciones de la documentación:
+
+<Code
+  code={`
+curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
+python3 get-platformio.py
+echo 'export PATH=$HOME/.platformio/penv/bin:$PATH' >> ~/.bashrc && source ~/.bashrc
+curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules | sudo tee /etc/udev/rules.d/99-platformio-udev.rules
+sudo service udev restart
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+Una vez instalado, con el comando `pio boards ststm32` podemos obtener todas las placas compatibles con PlatformIO de la familia STM32 (no indiques `ststm32` en el comando para ver todas las placas). Así podremos saber el ID de nuestra placa, que en mi caso es la `nucleo_f401re`. Con esto ya tendríamos la parte de compilar proyectos de Arduino y la de flashear proyectos tanto de Arduino como de Stm32CubeIDE/MX cubiertas.
+
+Ahora nos falta la guinda del pastel: el servicio de Self-Hosted GitHub Action. En mi caso, el self-hosted runner irá asociado a la organización de GitHub que utilizo con GitHub Classroom. Desde las settings de dicha organización, vamos a Actions > Runners y clicamos en New runner > New self-hosted runner. Como imagen escogemos Linux y como arquitectura ARM64. Seguimos las instrucciones que aparecen en la web *e voilà*, ya tenemos el self-hosted runner instalado. Normalmente, la RPi opera 24/7 sin que estemos pendientes. Por ello, es más interesante ejecutar el self-hosted runner como servicio. Para ello, en lugar de ejecutar el `./run-sh` de la documentación, ejecutamos:
+
+<Code
+  code={`
+sudo ./svc.sh install
+sudo ./svc.sh start
+`}
+  meta="showLineNumbers=false"
+  lang="shell"
+  frame="terminal"
+/>
+
+
+En el futuro, podríamos parar el servicio con `sudo ./svc.sh stop` y eliminarlo con `sudo ./svc.sh uninstall`.
+
+Si todo ha ido bien, nuestro self-hosted runner debería aparecer como activo y a la espera.
+
+<Image src={cleanShot20250614155313} alt="Self-hosted runner activo en GitHub" />
+
+Con esto ya lo tenemos todo listo.
+
+## Hello, World!
+
+Pues teniéndolo todo listo, solo falta hacer los tests. Éstos son específicos de cada aplicación, así que tus tests y los míos pueden parecerse como un huevo a una castaña. Por ello, simplemente haremos un ejemplo básico con un blink LED en el que haremos tests unitarios a los archivos de Arduino, tests de aceptación sobre la aplicación de Arduino, tests unitarios a los archivos de STM32CubeIDE, y tests de aceptación sobre la aplicación de STM32CubeIDE/MX.
+
+El repositorio del ejemplo puedes encontrarlo aquí:
+
+https://github.com/TheAlbertDev/example-self-hosted-runner
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "El repositorio de ejemplo está en mi cuenta personal y no tiene acceso a ningún self-hosted runner por motivos de seguridad. Tenedlo también en cuenta para vuestros propios self-hosted runners y no los pongáis accesibles para repositorios públicos. Alguien podría hacer un fork, hacer una PR en vuestro repositorio y, si tenéis las GitHub Actions configuradas para que se lancen al hacerse una PR, puede llegar a ejecutarse código malicioso en tu self-hosted runner.",
+    "También se agradece si dáis amor al repositorio con una ⭐"
+  ]}
+/>
+
+La estructura de directorios es la siguiente:
+
+<Code
+  code={`
+.
+├── .devcontainer
+├── .github
+│   └── workflows
+├── arduino
+│   └── blink_led
+├── stm32cube
+│   └── blink_led
+└── test
+    ├── arduino
+    │   └── blink_led
+    │       ├── acceptance
+    │       └── unit
+    └── stm32cube
+        └── blink_led
+            ├── acceptance
+            └── unit
+`}
+  frame="none"
+  meta="showLineNumbers=false"
+/>
+
+En las carpetas `arduino` y `stm32cube` existen carpetas para los diferentes proyectos de las respectivas plataformas. Por otro lado, tenemos la carpeta `test` donde una vez más hay dos carpetas `arduino` y `stm32cube` para recoger los tests de cada plataforma que también están organizados por proyectos. Dentro de cada proyecto los tests se separan en unitario y de aceptación en sus respectivas carpetas.
+
+Luego tenemos la carpeta `.devcontainer` que sirve para configurar un contenedor de desarrollo para VSCode (y allí tengo CppUTest disponible para lanzar los tests en local) y la carpeta `.github` que contiene las GitHub Action que se ejecutarán en nuestro self-hosted runner.
+
+En este ejemplo, el proyecto es el mismo para ambas plataformas: hacer parpadear el LED de la EVB cada 1 segundo. En los test unitarios testearemos que las funciones para encender/apagar el LED son llamadas correctamente desde el módulo de gestión del LED que crearemos, y en los tests de aceptación cargaremos el firmware en el dispositivo y comprobaremos físicamente que la señal que enciende/apaga el LED conmuta cada 1 segundo.
+
+### Proyecto de Arduino
+
+El añadir testing te obliga a organizar tu código siguiendo buenas prácticas. Estas prácticas quedan fuera del scope de esta entrada, pero a modo resumen: deberemos mover toda la gestión del LED a un fichero aparte del sketch principal. Esto lo haremos en los ficheros `led.cpp` y `led.h`. Son muy sencillos:
+
+<Code
+  code={`
+#ifndef LED_H__
+#define LED_H__
+
+void LED_config(void);
+void LED_turn_off(void);
+void LED_turn_on(void);
+
+#endif /* LED_H__ */
+`}
+  title="arduino/blink_led/led.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "Arduino.h"
+
+void LED_config(void) {
+    pinMode(13, OUTPUT);
+    digitalWrite(13, LOW);
+}
+
+void LED_turn_on(void) {
+    digitalWrite(13, HIGH);
+}
+
+void LED_turn_off(void) {
+    digitalWrite(13, LOW);
+}
+`}
+  title="arduino/blink_led/led.cpp"
+  lang="cpp"
+/>
+
+Luego en el sketch principal, simplemente usamos esas funciones:
+
+<Code
+  code={`
+#include "led.h"
+
+void setup() { LED_config(); }
+
+void loop() {
+    LED_turn_on();
+    delay(1000);
+    LED_turn_off();
+    delay(1000);
+}
+`}
+  title="arduino/blink_led/blink_led.ino"
+  lang="cpp"
+/>
+
+#### Tests unitarios
+
+Los tests unitarios son configurados en la carpeta `test/arduino/blink_led/unit`. No voy a poner por aquí todo el contenido del makefile y demás. Esto puedes verlo directamente en el [repositorio](https://github.com/TheAlbertDev/example-self-hosted-runner/tree/main/test/arduino/blink_led/unit).
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Como he dicho antes, como usar las suites de tests no es el objeto de la entrada, pero si queréis ver más sobre tests unitarios para sistema embebidos, nunca me cansaré de recomendar el libro \"Test-Driven Development for Embedded C\" de James W. Grenning. Si te consideras o quieres ser un ingeniero de sistemas embebidos, este libro debe de estar sí o sí en tu estantería. No sé cuántas veces me lo he leído. Es oro puro.",
+  ]}
+/>
+
+Lo más destacable de los tests unitarios es que debemos de mockear las llamadas a las funciones `pinMode` y `digitalWrite` para poder testear que son llamadas correctamente cuando corresponde. Esto lo hacemos con los siguientes ficheros auxiliares en los tests:
+
+<Code
+  code={`
+#ifndef Arduino_H__
+#define Arduino_H__
+
+#define OUTPUT 0x1
+#define LOW 0x0
+#define HIGH 0x1
+  
+void pinMode(uint32_t ulPin, uint32_t ulMode);
+void digitalWrite(uint32_t ulPin, uint32_t ulVal);
+
+#endif /* Arduino_H__ */
+`}
+  title="test/arduino/blink_led/unit/mocks/Arduino.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "Arduino.h"
+#include "CppUTestExt/MockSupport.h"
+
+void pinMode(uint32_t ulPin, uint32_t ulMode) {
+    mock()
+        .actualCall("pinMode")
+        .withParameter("ulPin", ulPin)
+        .withParameter("ulMode", ulMode);
+
+    return;
+}
+
+void digitalWrite(uint32_t ulPin, uint32_t ulVal) {
+    mock()
+        .actualCall("digitalWrite")
+        .withParameter("ulPin", ulPin)
+        .withParameter("ulVal", ulVal);
+
+    return;
+}
+`}
+  title="test/arduino/blink_led/unit/mocks/Arduino.c"
+  lang="cpp"
+/>
+
+De este modo, en los tests unitarios, podemos comprobar como al configurar el pin o apagar/encender el LED se llaman las funciones correctas con los parámetros pertinentes.
+
+<Code
+  code={`
+#include "led.h"
+#include "Arduino.h"
+#include "CppUTest/TestHarness.h"
+#include "CppUTestExt/MockSupport.h"
+#include <stdexcept>
+#include <stdio.h>
+
+TEST_GROUP(LED__management){};
+
+TEST(LED__management, Pin__configuration) {
+    mock()
+        .expectOneCall("pinMode")
+        .withParameter("ulPin", 13)
+        .withParameter("ulMode", OUTPUT);
+
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", LOW);
+
+    LED_config();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+TEST(LED__management, Turn__on) {
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", HIGH);
+
+    LED_turn_on();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+TEST(LED__management, Turn__off) {
+    mock()
+        .expectOneCall("digitalWrite")
+        .withParameter("ulPin", 13)
+        .withParameter("ulVal", LOW);
+
+    LED_turn_off();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+`}
+  title="test/arduino/blink_led/unit/led.test.cpp"
+  lang="cpp"
+/>
+
+Una vez implementados los tests, procedemos a automatizarlos en las GitHub Actions. Para ello tenemos el fichero `.github/workflows/arduino_blink_led_check.yaml`.
+
+<Code
+  code={`
+name: 🔌 Check Arduino Blink LED
+on:
+  pull_request:
+    paths:
+      - arduino/blink_led/**
+      - test/arduino/blink_led/**
+
+jobs:
+  check_arduino_project:
+    name: 🔧 Build Arduino Project
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout code 
+        uses: actions/checkout@v4
+      - name: 🛠️ Set up PlatformIO CLI project
+        run: |
+          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          pio project init -d build -b nucleo_f401re
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          echo "debug_tool = stlink" >> platformio.ini
+          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
+          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+      - name: 🏗️ Build PlatformIO CLI project
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          pio run
+  unit_tests:
+    name: 🧪 Unit tests
+    runs-on: self-hosted
+    env:
+      CPPUTEST_HOME: /opt/cpputest
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🧬 Run unit tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/unit
+        make 
+`}
+  title=".github/workflows/arduino_blink_led_check.yaml"
+  lang="yaml"
+/>
+<br/>
+La ejecución de los tests se da en el job `unit_tests`. Hay también un job llamado `check_arduino_project` que simplemente compila el proyecto de Arduino. Este último paso se hace de manera implícita durante los tests de aceptación, pero me gusta tener un job aparte solo para esto para evidenciar a los estudiantes que su proyecto no compila correctamente si es el caso. En este caso, podéis ver como ese job simplemente crea el proyecto en PlatformIO CLI, convierte el sketch principal a `.cpp` y compila.
+
+En la automatización de los tests unitarios simplemente se ingresa a la carpeta `test/arduino/blink_led/unit` y se ejecuta el comando `make`.
+
+A destacar en esta GitHub Action que se ejecuta en el self-hosted runner, como puede verse en `runs-on`,  y que solo se lanza en los Pull Requests en los que se hayan modificado ficheros del proyecto `blink_led` de Arduino o sus tests, como puede verse en `paths`.
+
+#### Tests de aceptación
+
+Por otro lado, tenemos los tests de aceptación en la carpeta `test/arduino/blink_led/acceptance`. En estos tests, compilaremos y cargaremos el firmware utilizando PlatformIO CLI y desde Python comprobaremos que la tensión en el pin que controla el LED conmuta con un periodo de 1 segundo. Para Python utilizo la suite de test pytest. [Aquí](https://github.com/TheAlbertDev/example-self-hosted-runner/tree/main/test/arduino/blink_led/acceptance) podéis ver los ficheros.
+
+Añadimos un job adicional a la GitHub Action anterior:
+
+<Code
+  code={`
+  acceptance_tests:
+    name: ✅ Acceptance tests
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      - name: 🛠️ Set up PlatformIO CLI project
+        run: |
+          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          pio project init -d build -b nucleo_f401re
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          echo "debug_tool = stlink" >> platformio.ini
+          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
+          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+      - name: 🏗️ Build and upload PlatformIO CLI project
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          pio run --target upload
+      - name: 🧬 Run acceptance tests
+        run: |
+          cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/acceptance
+          /usr/bin/python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          python -m pytest -v
+`}
+  meta="startLineNumber=40"
+  title=".github/workflows/arduino_blink_led_check.yaml"
+  lang="yaml"
+/>
+<br/>
+En este job, repetimos la creación del proyecto en PlatformIO CLI, compilamos y cargamos el firmware, y finalmente lanzamos los tests de aceptación.
+
+### Proyecto de STM32CubeIDE/MX
+
+Para el proyecto de STM32CubeIDE/MX, lo mismo que con Arduino. En un módulo aparte gestionamos el LED:
+
+<Code
+  code={`
+#ifndef INC_LED_H_
+#define INC_LED_H_
+
+void LED_turn_off(void);
+void LED_turn_on(void);
+
+#endif /* INC_LED_H_ */
+`}
+  title="stm32cube/blink_led/Core/Inc/led.h"
+  lang="cpp"
+/>
+<br/>
+<Code
+  code={`
+#include "main.h"
+
+void LED_turn_on(void) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+
+void LED_turn_off(void) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+}
+`}
+  title="stm32cube/blink_led/Core/Src/led.c"
+  lang="cpp"
+/>
+
+Las únicas diferencias con el código de Arduino son que en este caso nos ahorramos la función `LED_config` puesto que ya nos lo configura STM32CubeMX en la función `MX_GPIO_Init`, y que en lugar de llamar las funciones de Arduino para apagar/encender el LED, utilizamos las funciones de las HAL de STM32.
+
+Estas funciones las llamamos luego en el fichero `main.c`.
+
+#### Tests unitarios
+
+Como en Arduino, debemos mockear las HAL en los tests:
+
+<Code
+  code={`
+#ifndef Main_H__
+#define Main_H__
+
+#include <stdint.h>
+
+#define GPIO_PIN_RESET 0x0
+#define GPIO_PIN_SET 0x1
+#define LD2_Pin 0x0020
+#define LD2_GPIO_Port ((GPIO_TypeDef*)0x40020000)
+
+typedef uint32_t GPIO_TypeDef;
+typedef uint32_t GPIO_PinState;
+
+void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin,
+GPIO_PinState PinState);
+
+#endif /* Main_H__ */
+`}
+  title="test/stm32cube/blink_led/unit/mocks/main.h"
+  lang="c"
+/>
+<br/>
+<Code
+  code={`
+#include "main.h"
+#include "CppUTestExt/MockSupport_c.h"
+
+void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin,
+GPIO_PinState PinState) {
+    mock_c()
+        ->actualCall("HAL_GPIO_WritePin")
+        ->withPointerParameters("GPIOx", GPIOx)
+        ->withUnsignedIntParameters("GPIO_Pin", GPIO_Pin)
+        ->withUnsignedLongIntParameters("PinState", PinState);
+
+    return;
+}
+`}
+  title="test/stm32cube/blink_led/unit/mocks/main.c"
+  lang="c"
+/>
+
+Fijémonos que esta vez el mock está hecho en C y no C++ como en Arduino. Ahora simplemente desde los tests unitarios hacemos:
+
+<Code
+  code={`
+#include "CppUTest/TestHarness.h"
+#include "CppUTestExt/MockSupport.h"
+#include <stdexcept>
+#include <stdio.h>
+
+extern "C" {
+#include "led.h"
+#include "main.h"
+}
+
+TEST_GROUP(LED__management){};
+
+TEST(LED__management, Turn__on) {
+    mock()
+        .expectOneCall("HAL_GPIO_WritePin")
+        .withParameter("GPIOx", LD2_GPIO_Port)
+        .withParameter("GPIO_Pin", LD2_Pin)
+        .withParameter("PinState", GPIO_PIN_SET);
+
+    LED_turn_on();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+
+  
+
+TEST(LED__management, Turn__off) {
+    mock()
+        .expectOneCall("HAL_GPIO_WritePin")
+        .withParameter("GPIOx", LD2_GPIO_Port)
+        .withParameter("GPIO_Pin", LD2_Pin)
+        .withParameter("PinState", GPIO_PIN_RESET);
+
+    LED_turn_off();
+
+    mock().checkExpectations();
+    mock().clear();
+}
+`}
+  title="test/stm32cube/blink_led/unit/led.test.cpp"
+  lang="cpp"
+/>
+
+Ahora solo queda crear la GitHub Action que ejecute los tests unitarios. Esta será exactamente igual que la de Arduino, lo único que en una carpeta distinta y sin un job de compilación. También el trigger de la GitHub Action comprueba si se han modificado ficheros del proyecto `blink_led` de STM32CubeIDE/MX o sus tests para lanzarse o no.
+
+<Code
+  code={`
+name: 🔌 Check STM32Cube Blink LED
+on:
+  pull_request:
+    paths:
+      - stm32cube/blink_led/**
+      - test/stm32cube/blink_led/**
+
+jobs:
+  unit_tests:
+    name: 🧪 Unit tests
+    runs-on: self-hosted
+    env:
+      CPPUTEST_HOME: /opt/cpputest
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🧬 Run unit tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/unit
+        make
+`}
+  title=".github/workflows/stm32cube_blink_led_check.yaml"
+  lang="yaml"
+/>
+
+#### Tests de aceptación
+
+Para los tests de aceptación reutilizaremos la parte de Arduino. Simplemente, en la GitHub Action cargaremos el fichero `.elf` en el microcontrolador utilizando OpenOCD.
+
+<Code
+  code={`
+  acceptance_tests:
+    name: ✅ Acceptance tests
+    runs-on: self-hosted
+    steps:
+    - name: 📥 Checkout code 
+      uses: actions/checkout@v4
+    - name: 🏗️ Upload .elf file
+      run: |
+        openocd -d2 -s ~/.platformio/packages/tool-openocd/openocd/scripts -f ~/.platformio/packages/tool-openocd/openocd/scripts/board/st_nucleo_f4.cfg -c "program \"$(readlink -f stm32cube/blink_led/Debug/*.elf | head -n1)\" verify reset; shutdown;"
+    - name: 🧬 Run acceptance tests
+      run: |
+        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/acceptance
+        /usr/bin/python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements.txt
+        python -m pytest -v
+`}
+  meta="startLineNumber=21"
+  title=".github/workflows/stm32cube_blink_led_check.yaml"
+  lang="yaml"
+/>
+
+## Conclusiones
+
+Con todo esto, tenemos nuestro self-hosted runner y repositorio configurados para hacer tests automatizados para nuestros desarrollos en sistemas embebidos. Ahora, cada vez que tengamos un Pull Request en el que se modifiquen ficheros de los proyectos o de los tests, se lanzan los tests de las pertinentes plataformas y los resultados aparecen en la propia Pull Request.
+
+<Image src={cleanShot20250615235627} alt="Resultados de los tests en GitHub Pull Request" />
+
+Puesto que esto me ayuda a poder testear el desarrollo de mis estudiantes durante la asignatura, ahora adaptaré los tests para que asignen una puntuación a las Pull Requests en función de los tests que pasan satisfactoriamente y los que no mediante las GitHub Actions de [GitHub Classroom Resources](https://github.com/classroom-resources). Pero esto queda para otra entrada.
+
+Obviamente, esta aproximación que hemos seguido sirve para la aplicación para la cual ha sido diseñada: evaluar los desarrollos de los estudiantes. En un entorno de producción profesional deberían de tenerse en cuenta otras configuraciones/funcionalidades como implementar todo esto en un ordenador de workbench con una arquitectura compatible con todas las herramientas de compilación y flasheo, compilar en el propio runner, compilar versiones de producción y de desarrollo, adjuntar los artefactos al servidor de despliegue, firmware y encriptar los binarios generados, generar release notes automatizadas, gestión de versiones, tener en cuenta aspectos de seguridad, etc. Pero con este ejemplo, hemos visto como con un bajo presupuesto y poco tiempo hemos podido implementar un servidor de integración continua para nuestros desarrollos para sistemas embebidos.
+
+<AuthorNote
+  authorRef={frontmatter.authors[0].author}
+  notes={[
+    "Consejo de amigo: si valoras tu tiempo, ahora es el momento de apagar la RPi, extraer la memoria SD y guardar una imagen de la misma para \"en caso de accidente\" poder recuperar el sistema y no tener que volver a configurarlo todo. Avisado quedas...",
+  ]}
+/>
