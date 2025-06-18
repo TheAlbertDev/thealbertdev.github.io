@@ -478,16 +478,16 @@ jobs:
         uses: actions/checkout@v4
       - name: 🛠️ Set up PlatformIO CLI project
         run: |
-          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          mkdir \${{ github.workspace }}/build
           pio project init -d build -b nucleo_f401re
-          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          cd \${{ github.workspace }}/build
           echo "debug_tool = stlink" >> platformio.ini
-          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
-          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
-          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          cp \${{ github.workspace }}/arduino/blink_led/* \${{ github.workspace }}/build/src || true
+          mv \${{ github.workspace }}/build/src/blink_led.ino \${{ github.workspace }}/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' \${{ github.workspace }}/build/src/blink_led.cpp
       - name: 🏗️ Build PlatformIO CLI project
         run: |
-          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          cd \${{ github.workspace }}/build
           pio run
   unit_tests:
     name: 🧪 Unit tests
@@ -499,7 +499,7 @@ jobs:
       uses: actions/checkout@v4
     - name: 🧬 Run unit tests
       run: |
-        cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/unit
+        cd \${{ github.workspace }}/test/arduino/blink_led/unit
         make 
 `}
   title=".github/workflows/arduino_blink_led_check.yaml"
@@ -528,20 +528,20 @@ Añadimos un job adicional a la GitHub Action anterior:
         uses: actions/checkout@v4
       - name: 🛠️ Set up PlatformIO CLI project
         run: |
-          mkdir $&#123;&#123; github.workspace &#125;&#125;/build
+          mkdir \${{ github.workspace }}/build
           pio project init -d build -b nucleo_f401re
-          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          cd \${{ github.workspace }}/build
           echo "debug_tool = stlink" >> platformio.ini
-          cp $&#123;&#123; github.workspace &#125;&#125;/arduino/blink_led/* $&#123;&#123; github.workspace &#125;&#125;/build/src || true
-          mv $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.ino $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
-          sed -i '1i#include "Arduino.h"' $&#123;&#123; github.workspace &#125;&#125;/build/src/blink_led.cpp
+          cp \${{ github.workspace }}/arduino/blink_led/* \${{ github.workspace }}/build/src || true
+          mv \${{ github.workspace }}/build/src/blink_led.ino \${{ github.workspace }}/build/src/blink_led.cpp
+          sed -i '1i#include "Arduino.h"' \${{ github.workspace }}/build/src/blink_led.cpp
       - name: 🏗️ Build and upload PlatformIO CLI project
         run: |
-          cd $&#123;&#123; github.workspace &#125;&#125;/build
+          cd \${{ github.workspace }}/build
           pio run --target upload
       - name: 🧬 Run acceptance tests
         run: |
-          cd $&#123;&#123; github.workspace &#125;&#125;/test/arduino/blink_led/acceptance
+          cd \${{ github.workspace }}/test/arduino/blink_led/acceptance
           /usr/bin/python3 -m venv .venv
           source .venv/bin/activate
           pip install -r requirements.txt
@@ -710,7 +710,7 @@ jobs:
       uses: actions/checkout@v4
     - name: 🧬 Run unit tests
       run: |
-        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/unit
+        cd \${{ github.workspace }}/test/stm32cube/blink_led/unit
         make
 `}
   title=".github/workflows/stm32cube_blink_led_check.yaml"
@@ -734,7 +734,7 @@ Para los tests de aceptación reutilizaremos la parte de Arduino. Simplemente, e
         openocd -d2 -s ~/.platformio/packages/tool-openocd/openocd/scripts -f ~/.platformio/packages/tool-openocd/openocd/scripts/board/st_nucleo_f4.cfg -c "program \"$(readlink -f stm32cube/blink_led/Debug/*.elf | head -n1)\" verify reset; shutdown;"
     - name: 🧬 Run acceptance tests
       run: |
-        cd $&#123;&#123; github.workspace &#125;&#125;/test/stm32cube/blink_led/acceptance
+        cd \${{ github.workspace }}/test/stm32cube/blink_led/acceptance
         /usr/bin/python3 -m venv .venv
         source .venv/bin/activate
         pip install -r requirements.txt
