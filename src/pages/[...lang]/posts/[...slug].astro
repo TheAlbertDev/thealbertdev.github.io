@@ -119,7 +119,8 @@ if (!images[post.data.image!]) throw new Error(`"${post.data.image}" does not ex
     <div class="divider"></div>
     <div class="grid grid-row-2 md:gap-x-12 grid-cols-1 md:grid-cols-12 lg:grid-cols-10">
       <section
-        class="article-content mb-8 prose-pre:max-w-[85vw] md:prose-pre:max-w-none prose prose-p:mb-6 prose-h2:mb-5 prose-h2:mt-10 prose-h3:mb-3 prose-h3:mt-5 col-span-1 md:col-span-8 lg:col-span-7 text-lg"
+        class="article-content mb-8 prose-pre:max-w-[85vw] md:prose-pre:max-w-none prose prose-p:mb-6 prose-h2:mb-5 prose-h2:mt-10 prose-h3:mb-3 prose-h3:mt-5 col-span-1 md:col-span-8 lg:col-span-7 text-lg
+        [&_p]:my-[24px] [&_p>code]:whitespace-pre-wrap [&_p>code]:break-all [&_p>code]:break-words"
       >
         <Content components={{ Code, InfoNote, AuthorNote }} />
         <BottomTags tags={post.data.tags} />
@@ -133,8 +134,3 @@ if (!images[post.data.image!]) throw new Error(`"${post.data.image}" does not ex
     </div>
   </article>
 </Layout>
-<style>
-  #post-content p {
-    margin: 24px !important;
-  }
-</style>
