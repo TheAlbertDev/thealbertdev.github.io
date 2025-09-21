@@ -6,6 +6,15 @@ export function getLangFromUrl(url: URL) {
   return defaultLang;
 }
 
+export function getUrlWithoutLang(url: URL): string {
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const lang = pathParts.length > 0 ? pathParts[0] : undefined;
+  if (lang && lang in ui) {
+    return pathParts.slice(1).join("/");
+  }
+  return url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname;
+}
+
 export function useTranslations(lang: keyof typeof ui) {
   return function t(key: keyof (typeof ui)[typeof defaultLang]) {
     // @ts-ignore

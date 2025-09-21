@@ -1,8 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { getEntry } from "astro:content";
 import { languages, defaultLang } from "../../i18n/ui";
 import {
   getLangFromUrl,
+  getUrlWithoutLang,
   useTranslatedPath,
   useTranslations,
 } from "../../i18n/utils";
@@ -10,6 +12,7 @@ import {
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => {
     const translatePath = useTranslatedPath(lang as keyof typeof languages);
+    let pipi = translatePath("acerca-de").split("/").pop();
     return {
       params: {
         lang: lang !== defaultLang ? lang : undefined,
@@ -20,8 +23,9 @@ export function getStaticPaths() {
 }
 
 const lang = getLangFromUrl(Astro.url);
-
+const slug = getUrlWithoutLang(Astro.url);
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+const page = (await getEntry("pages", `${lang}/${slug}`))!;
 ---
 
-<Layout title={t("nav.contact")}>Hola</Layout>
+<Layout title={t("nav.about")}>{page.body}</Layout>

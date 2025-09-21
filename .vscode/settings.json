@@ -1,5 +1,7 @@
 {
   "typescript.inlayHints.parameterNames.enabled": "all",
   "editor.formatOnSave": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[astro]": { "editor.formatOnSave": true },
+  "[typescript]": { "editor.formatOnSave": true },
 }

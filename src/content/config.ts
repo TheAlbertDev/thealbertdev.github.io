@@ -28,6 +28,11 @@ const postsCollection = defineCollection({
   }),
 });
 
+const pagesCollection = defineCollection({
+  type: "content",
+  schema: z.object({}),
+});
+
 const categoriesCollection = defineCollection({
   type: "data",
   schema: z.object({
@@ -37,18 +42,15 @@ const categoriesCollection = defineCollection({
 
 const authorsCollection = defineCollection({
   type: "data",
-  schema: 
-    z.object({
-      name: z.string(),
-      surname: z.string().optional(),
-      image: z.string(),
-      email: z.string().optional(),
-      socialMedia: z
-        .array(
-          z.object({ name: z.string(), icon: z.string(), link: z.string() }),
-        )
-        .optional(),
-    }),
+  schema: z.object({
+    name: z.string(),
+    surname: z.string().optional(),
+    image: z.string(),
+    email: z.string().optional(),
+    socialMedia: z
+      .array(z.object({ name: z.string(), icon: z.string(), link: z.string() }))
+      .optional(),
+  }),
 });
 
 const publicationsCollection = defineCollection({
@@ -73,6 +75,7 @@ const publicationsCollection = defineCollection({
 
 export const collections = {
   posts: postsCollection,
+  pages: pagesCollection,
   authors: authorsCollection,
   publications: publicationsCollection,
   categories: categoriesCollection,
