@@ -2,15 +2,17 @@
 import { Icon } from "astro-icon/components";
 ---
 
-<label class="swap swap-rotate btn btn-ghost rounded-btn">
+<label class="btn btn-ghost rounded-btn">
+<span class="swap swap-rotate">
   <input
     id="theme-toggle"
     type="checkbox"
     class="theme-controller"
     value="dark"
   />
-  <Icon name="tabler:sun" class="swap-off" size={22} />
-  <Icon name="tabler:moon" class="swap-on" size={22} />
+  <Icon name="tabler:sun" class="swap-off fill-current" size={22} />
+  <Icon name="tabler:moon" class="swap-on fill-current" size={22} />
+  </span>
 </label>
 
 <script is:inline>
