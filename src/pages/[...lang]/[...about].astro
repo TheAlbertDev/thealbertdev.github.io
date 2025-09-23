@@ -13,7 +13,6 @@ import {
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => {
     const translatePath = useTranslatedPath(lang as keyof typeof languages);
-    let pipi = translatePath("acerca-de").split("/").pop();
     return {
       params: {
         lang: lang !== defaultLang ? lang : undefined,
@@ -27,7 +26,7 @@ const lang = getLangFromUrl(Astro.url);
 const slug = getUrlWithoutLang(Astro.url);
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
 const page = (await getEntry("pages", `${lang}/${slug}`))!;
-const { Content, headings } = await page.render();
+const { Content } = await page.render();
 ---
 
 <Layout title={t("nav.about")}>
