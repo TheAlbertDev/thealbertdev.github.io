@@ -57,7 +57,14 @@ const publicationsCollection = defineCollection({
   type: "data",
   schema: z.object({
     title: z.string(),
-    type: z.enum(["journal", "patent", "book", "thesis"]),
+    type: z.enum([
+      "journal",
+      "patent",
+      "book",
+      "chapter",
+      "thesis",
+      "proceeding",
+    ]),
     pubYear: z.number(),
     pubMonth: z.number(),
     pubDay: z.number().optional(),
@@ -65,11 +72,11 @@ const publicationsCollection = defineCollection({
     journal: z.string().optional(),
     authors: z.array(z.string()),
     publisher: z.string().optional(),
-    volume: z.number().optional(),
-    number: z.number().optional(),
+    volume: z.string().optional(),
+    number: z.string().optional(),
     pages: z.string().optional(),
     abstract: z.string().optional(),
-    preprint: z.string().optional(),
+    isbn: z.string().optional(),
   }),
 });
 

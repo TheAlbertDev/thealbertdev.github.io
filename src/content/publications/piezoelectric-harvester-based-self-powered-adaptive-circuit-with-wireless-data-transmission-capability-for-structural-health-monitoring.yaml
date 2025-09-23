@@ -1,0 +1,17 @@
+title: >-
+  Piezoelectric harvester-based self-powered adaptive circuit with wireless data transmission capability for structural health monitoring
+type: proceeding
+pubYear: 2015
+pubMonth: 11
+pubDay: 25
+doi: 10.1109/DCIS.2015.7388594
+journal: 2015 Conference on Design of Circuits and Integrated Systems (DCIS)
+authors:
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Jaime López-Sánchez
+  - Pere Miribel-Català
+publisher: IEEE
+isbn: 978-1-4673-7228-2
+abstract: >
+  A novel piezoelectric harvester-based self-powered adaptive solution with wireless data transmission capability for structural health monitoring is presented. This work demonstrates the accomplishment of maximum power transferred condition for a wide range load conditions and for different amplitudes and frequencies oscillation of the piezoelectric transducer. The characterization of the wireless transmission of temperature and open voltage circuit of the piezoelectric transducer is also presented to support the use of this solution as a wireless self-powered adaptive structural health monitor solution.

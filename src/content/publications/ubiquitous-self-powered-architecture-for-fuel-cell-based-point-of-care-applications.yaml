@@ -1,0 +1,20 @@
+title: >-
+  Ubiquitous Self-Powered Architecture for Fuel Cell-Based Point-of-Care Applications
+type: journal
+pubYear: 2020
+pubMonth: 10
+pubDay: 13
+doi: 10.1109/TIE.2020.3029484
+journal: IEEE Transactions on Industrial Electronics
+authors:
+  - Albert Álvarez-Carulla
+  - Yaiza Montes-Cebrián
+  - Manel Puig-Vidal
+  - Jordi Colomer-Farrarons
+  - Pere LI. Miribel-Català
+publisher: IEEE
+volume: "68"
+number: "11"
+pages: 11447 - 11457
+abstract: >
+  Current research about battery-less fuel cell-based point-of-care (POC) devices study energy extraction and the measurement separately. In this article, we purpose a self-powered architecture that extracts energy efficiently from a fuel cell and performs a measurement simultaneously. The prototype uses a discrete power management unit based architecture with a power consumption lower than 36 μW. We have tested it with ethanol, lactate, and methanol-based fuel cells, being able to perform a fuel concentration measurement while it extracts energy from fuel cells. The solution exhibited a minimum efficiency and maximum start-up time for the ethanol, lactate, and methanol-based fuel cells of 80% and 12 s. The architecture applies to other fuel cells, and the results show how this solution can help us face the current POC's autonomy challenge.

@@ -1,0 +1,10 @@
+title: >-
+  Energy harvesting solutions for self-powered devices: from structural health monitoring to biomedical applications
+type: thesis
+pubYear: 2021
+pubMonth: 01
+journal: Thesis
+authors:
+  - Albert Álvarez-Carulla
+abstract: >
+  The thesis reflects the research carried out on the development of truly self-powered devices. The development of devices for the scopes of Structural Health Monitoring (SHM) and Point-of-Care devices (PoC) is shown. New solutions are implemented in the field of energy harvesting to use a single transducer as sensor element and power supply for the system. In this research, the transducers used are piezoelectric generators and galvanic cells, being extrapolated the developments made to other types of transducers or generators.

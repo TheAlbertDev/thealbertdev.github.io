@@ -1,0 +1,19 @@
+title: >-
+  A Fuel Cell-based adaptable Self-Powered Event Detection platform enhanced for biosampling applications
+type: proceeding
+pubYear: 2018
+pubMonth: 11
+pubDay: 14
+doi: 10.1109/DCIS.2018.8681482
+journal: 2018 Conference on Design of Circuits and Integrated Systems (DCIS)
+authors:
+  - Y. Montes-Cebrián
+  - A. Álvarez-Carulla
+  - J. Colomer-Farrarons
+  - M. Puig-Vidal
+  - J. López-Sánchez
+  - P. Miribel-Català
+publisher: IEEE
+isbn: 978-1-7281-0172-9
+abstract: >
+  In this work, we present a Self-Powered Event Detection platform to sample biological agents. The proposed low-power system does not use a conventional battery, electronics are powered by a Biological Fuel Cell (BFC). BFCs are electrochemical devices that use biological agents to transform chemical to electrical energy. Furthermore, BFCs can power the sensing electronics while they act as a sensor. We demonstrate the feasibility of this discrete approach with the simulation of the self-powered system fully adaptable to any type of BFC. In this case, we validate the electronic platform with a glucose BFC, detecting three glucose levels (5mM, 7mM and 10mM). The designed system detects sample concentration measuring the current provided by the BFC and gives a qualitative result. The advantages of the presented approach can be extended to any kind of BFC, by measuring different types of analytes. In addition, this innovative concept opens the door to new emerging technologies. Due to the simple architecture of the designed system, it can be implemented on flexible and printable plastic substrates.

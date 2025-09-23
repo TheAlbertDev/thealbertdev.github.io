@@ -1,0 +1,15 @@
+title: >-
+ Self-powered System and Method for Power Extraction and Measurement of Energy-generator Units
+type: patent
+pubYear: 2021
+pubMonth: 01
+pubDay: 21
+journal: Patent
+authors:
+  - A. Álvarez-Carulla
+  - P. Miribel-Català
+  - Y. Montes-Cebrián
+  - J. Colomer-Farrarons
+number: WO/2021/009276
+abstract: >
+  A self-powered system and a method for power extraction and measurement of energy-generator units are disclosed. The system comprises an energy generator unit providing an electrical current IFC and a voltage VFC; an instrumentation block to measure the electrical current 1FC, and a power management unit connected to the energy generator unit via a first input that collects the electrical current IFC, extracting an electrical power provided by the energy generator unit. The power management unit also has a second input which is connected to a feedback element connected to a voltage reference VREF, to the voltage VFC and to the instrumentation block. A variation of an equivalent input impedance of the power management unit sets a given parameter of the energy generator unit to a controlled given value and the instrumentation block assists in the control of the parameter.

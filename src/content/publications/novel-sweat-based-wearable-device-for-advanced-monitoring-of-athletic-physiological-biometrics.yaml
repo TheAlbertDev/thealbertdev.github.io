@@ -20,8 +20,8 @@ authors:
   - Pere Miribel-Català
   - Jaime Punter-Villagrasa
 publisher: MDPI
-volume: 23
-number: 23
+volume: "23"
+number: "23"
 pages: '9473'
 abstract: >
   Blood testing has traditionally been the gold standard for the physiological
@@ -39,4 +39,3 @@ abstract: >
   rate dynamics is presented. This system is part of a novel wearable device
   tailored for athletes that offers to the user a real-time assessment of their
   physiological status and performance.
-preprint: /preprints/sensors-23-09473.pdf

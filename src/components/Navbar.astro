@@ -51,8 +51,14 @@ const translatePath = useTranslatedPath(lang);
         <a href={translatePath("/posts", lang)}>{t("nav.posts")}</a>
       </li>
       <li>
+        <a href={translatePath("/publicaciones", lang)}
+          >{t("nav.publications")}</a
+        >
+      </li>
+      <li>
         <a href={translatePath("/acerca-de", lang)}>{t("nav.about")}</a>
       </li>
+
       <!-- 
       <li>
         <a href={translatePath("/contactar", lang)}>{t("nav.contact")}</a>

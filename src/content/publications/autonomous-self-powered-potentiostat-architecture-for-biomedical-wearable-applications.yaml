@@ -1,0 +1,23 @@
+title: >-
+  Autonomous self-powered potentiostat architecture for biomedical wearable applications
+type: proceeding
+pubYear: 2020
+pubMonth: 11
+pubDay: 18
+doi: 10.1109/DCIS51330.2020.9268667
+journal: 2020 XXXV Conference on Design of Circuits and Integrated Systems (DCIS)
+authors:
+  - Javier Aguilar
+  - Albert Álvarez-Carulla
+  - Valeria Colmena
+  - Oscar Carreras
+  - Genis Rabost
+  - Manel Puig-Vidal
+  - Jordi Colomer-Farrarons
+  - Xavier Muñoz
+  - Pere Miribel-Catala
+  - Jaime Punter-Villagrasa
+publisher: IEEE
+isbn: 978-1-7281-9133-1
+abstract: >
+  In this work, we present an architecture of an envisaged autonomous self-powered potentiostat for biomedical wearable applications. This architecture has been conceived as a versatile and compact analog front-end for electrochemical disposable sensors, specifically as a key component of a wearable non-invasive biomedical device. This architecture is composed by a custom made three electrode potentiostat, a power management circuit for power regulation and to generate the bias voltage needed for proper electrochemical sensor operation, and finally an energy harvesting circuit for power generation. Initial characterization and validation of the potentiostat amplifier demonstrates good resolution, linearity and range, operating at ± 1.5V (450μW), being able to operate as an autonomous unit while being highly customizable for different electrochemical sensors.

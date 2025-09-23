@@ -1,0 +1,17 @@
+title: >-
+  An adaptative self-powered energy harvester strain sensing device based of mechanical vibrations for structural health monitoring applications
+type: proceeding
+pubYear: 2016
+pubMonth: 06
+pubDay: 08
+doi: 10.1109/ISIE.2016.7744964
+journal: 2016 IEEE 25th International Symposium on Industrial Electronics (ISIE)
+authors:
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Jaime López-Sánchez
+  - Pere Miribel-Català
+publisher: IEEE
+isbn: 978-1-5090-0874-2
+abstract: >
+  This paper presents an adaptative self-powered energy harvester strain sensing device based of mechanical vibrations for structural health monitoring applications which, even having multiple fields of application, is framed in the aerospace field. This solution uses a piezoelectric transducer as an energy source, harvesting the energy provided by the in-flight vibration of the aircraft's wing, and as a strain sensor while it assures the accomplishment of maximum power transferred condition between the piezoelectric transducer and the load. The strain measured is outputted by 6-bit parallel output. The experimental results obtained validate the solution as a true self-powered energy harvesting solution able to monitor the strain suffered by the mechanical part where it is attached. Also validate that the maximum power transferred condition is accomplished regardless the characteristics of the oscillations of the mechanical part and the characteristics of the load.

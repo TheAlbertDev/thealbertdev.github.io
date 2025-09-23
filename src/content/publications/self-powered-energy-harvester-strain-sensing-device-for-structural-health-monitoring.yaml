@@ -1,0 +1,20 @@
+title: >-
+  Self-Powered energy harvester strain sensing device for structural health monitoring
+type: proceeding
+pubYear: 2016
+pubMonth: 12
+pubDay: 6
+doi: 10.1088/1742-6596/773/1/012070
+journal: "Journal of Physics: Conference Series"
+authors:
+  - A. Álvarez
+  - M. Bafleur
+  - J-M. Dilhac
+  - J. Colomer
+  - D. Dragomirescu
+  - J. Lopez
+  - M. Zhu
+  - P. Miribel
+publisher: IOP Science
+abstract: >
+  This paper presents an envisaged autonomous strain sensor device, which is dedicated to structural health monitoring applications. The paper introduces the ASIC approach that replaces the discrete approach of some of the main modules.

@@ -1,0 +1,17 @@
+title: >-
+  Piezoelectric Harvester-based structural health monitoring that uses a self-powered adaptive circuit
+type: proceeding
+pubYear: 2015
+pubMonth: 06
+pubDay: 04
+doi: 10.1109/MetroAeroSpace.2015.7180713
+journal: 2015 IEEE Metrology for Aerospace (MetroAeroSpace)
+authors:
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Jaime López-Sánchez
+  - Pere Miribel-Català
+publisher: IEEE
+isbn: 978-1-4799-7569-3
+abstract: >
+  This manuscript presents a Piezoelectric Harvester based on a novel analog control unit to assures a maximum power transmission. Also in this paper it is presented a study of the transferred power between the piezoelectric generator and a load based on data obtained by simulation and experimentally. In addition, results of experimental test of the system for its application as Structural Health Monitoring is presented.

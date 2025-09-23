@@ -6,6 +6,8 @@ import {
   getLangFromUrl,
 } from "../../i18n/utils";
 import { defaultLang, languages } from "../../i18n/ui";
+import { getCollection } from "astro:content";
+import GradientTag from "../../components/GradientTag.astro";
 
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => {
@@ -22,6 +24,113 @@ export function getStaticPaths() {
 const lang = getLangFromUrl(Astro.url);
 
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
+const publications = (await getCollection("publications")).sort(
+  (a, b) =>
+    new Date(
+      b.data.pubYear,
+      b.data.pubMonth ?? 1,
+      b.data.pubDay ?? 1,
+    ).getTime() -
+    new Date(
+      a.data.pubYear,
+      a.data.pubMonth ?? 1,
+      a.data.pubDay ?? 1,
+    ).getTime(),
+);
 ---
 
-<Layout title={t("publications.title")}>Pedo</Layout>
+<Layout title={t("publications.title")}>
+  <div class="container mx-auto max-w-screen-lg">
+    <h1 class="text-4xl mb-12 font-bold">{t("publications.title")}</h1>
+    <ul class="list">
+      {
+        publications.map((publication) => (
+          <div class="collapse collapse-plus pt-0">
+            <input type="checkbox" class="!px-0 !pt-0" />
+            <div class="collapse-title !px-0 pt-0">
+              <li class="list-row pl-0 pr-16 pt-0" style="position: relative;">
+                <div class="text-4xl font-thin opacity-30 tabular-nums">
+                  '{publication.data.pubYear.toString().slice(-2)}
+                </div>
+                <div class="list-col-grow">
+                  <GradientTag>{publication.data.journal}</GradientTag>
+                  <h2 class="text-base font-semibold">
+                    {publication.data.title}
+                  </h2>
+                  <div class="text-sm">
+                    {publication.data.authors.join(", ")}
+                  </div>
+                </div>
+              </li>
+            </div>
+            <div class="collapse-content px-0 text-md">
+              <div>{publication.data.abstract}</div>
+              <div class="flex gap-4 mt-4 mb-16">
+                {publication.data.publisher && (
+                  <div>
+                    {t("publications.publisher")}: {publication.data.publisher}
+                  </div>
+                )}
+                {publication.data.doi && (
+                  <div>
+                    DOI:{" "}
+                    <a
+                      href={`https://doi.org/${publication.data.doi}`}
+                      target="_blank"
+                      rel="noopener"
+                      class="link"
+                    >
+                      {publication.data.doi}
+                    </a>
+                  </div>
+                )}
+                {publication.data.isbn && (
+                  <div>ISBN: {publication.data.isbn}</div>
+                )}
+                {publication.data.pubYear && (
+                  <div>
+                    {`${t("publications.published")}: `}
+                    {publication.data.pubDay && publication.data.pubMonth
+                      ? new Date(
+                          publication.data.pubYear,
+                          publication.data.pubMonth - 1,
+                          publication.data.pubDay,
+                        ).toLocaleDateString(lang, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : publication.data.pubMonth
+                        ? new Date(
+                            publication.data.pubYear,
+                            publication.data.pubMonth - 1,
+                          ).toLocaleDateString(lang, {
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : publication.data.pubYear}
+                  </div>
+                )}
+                {publication.data.volume && (
+                  <div>
+                    {t("publications.volume")}: {publication.data.volume}
+                  </div>
+                )}
+                {publication.data.number && (
+                  <div>
+                    {t("publications.number")}: {publication.data.number}
+                  </div>
+                )}
+                {publication.data.pages && (
+                  <div>
+                    {t("publications.pages")}: {publication.data.pages}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </ul>
+  </div>
+</Layout>

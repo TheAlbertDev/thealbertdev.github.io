@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getEntry } from "astro:content";
+
 import { languages, defaultLang } from "../../i18n/ui";
 import {
   getLangFromUrl,
@@ -26,6 +27,17 @@ const lang = getLangFromUrl(Astro.url);
 const slug = getUrlWithoutLang(Astro.url);
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
 const page = (await getEntry("pages", `${lang}/${slug}`))!;
+const { Content, headings } = await page.render();
 ---
 
-<Layout title={t("nav.about")}>{page.body}</Layout>
+<Layout title={t("nav.about")}>
+  <div class="container mx-auto max-w-screen-lg">
+    <h1 class="text-4xl mb-6 font-bold">{t("nav.about")}</h1>
+    <section
+      class="mx-auto article-content prose-pre:max-w-[85vw] md:prose-pre:max-w-none prose prose-p:mb-6 prose-h2:mb-5 prose-h2:mt-10 prose-h3:mb-3 prose-h3:mt-5 text-lg
+        [&_p]:my-[24px] [&_p>code]:whitespace-pre-wrap [&_p>code]:break-all [&_p>code]:break-words"
+    >
+      <Content components={{}} />
+    </section>
+  </div>
+</Layout>

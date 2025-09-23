@@ -1,0 +1,21 @@
+title: >-
+  Competitive USB-Powered Hand-Held Potentiostat for POC Applications: An HRP Detection Case
+type: journal
+pubYear: 2019
+pubMonth: 12
+pubDay: 6
+doi: 10.3390/s19245388
+journal: Sensors
+authors:
+  - Yaiza Montes-Cebrián
+  - Albert Álvarez-Carulla
+  - Gisela Ruiz-Vega
+  - Jordi Colomer-Farrarons
+  - Manel Puig-Vidal
+  - Eva Baldrich
+  - Pere Ll. Miribel-Català
+publisher: MDPI
+volume: "19 (24)"
+number: "5388"
+abstract: >
+  Considerable efforts are made to develop Point-of-Care (POC) diagnostic tests. POC devices have the potential to match or surpass conventional systems regarding time, accuracy, and cost, and they are significantly easier to operate by or close to the patient. This strongly depends on the availability of miniaturized measurement equipment able to provide a fast and sensitive response. This paper presents a low-cost, portable, miniaturized USB-powered potentiostat for electrochemical analysis, which has been designed, fabricated, characterized, and tested against three forms of high-cost commercial equipment. The portable platform has a final size of 10.5 x 5.8 x 2.5 cm, a weight of 41 g, and an approximate manufacturing cost of $85 USD. It includes three main components: the power module which generates a stable voltage and a negative supply, the front-end module that comprises a dual-supply potentiostat, and the back-end module, composed of a microcontroller unit and a LabVIEW-based graphic user interface, granting plug-and-play and easy-to-use operation on any computer. The performance of this prototype was evaluated by detecting chronoamperometrically horseradish peroxidase (HRP), the enzymatic label most widely used in electrochemical biosensors. As will be shown, the miniaturized platform detected HRP at concentrations ranging from 0.01 ng·mL⁻¹ to 1 µg·mL⁻¹, with results comparable to those obtained with the three commercial electrochemical systems.

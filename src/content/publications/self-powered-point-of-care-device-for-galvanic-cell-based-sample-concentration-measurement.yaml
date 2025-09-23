@@ -3,8 +3,8 @@ title: >-
   Measurement
 type: journal
 pubYear: 2021
-pubMonth: 11
-pubDay: 28
+pubMonth: 4
+pubDay: 10
 doi: 10.3390/s21082665
 journal: Sensors
 authors:
@@ -13,8 +13,8 @@ authors:
   - Jordi Colomer-Farrarons
   - Pere Lluís Miribel-Català
 publisher: MDPI
-volume: 21
-number: 8
+volume: "21"
+number: "8"
 pages: '2665'
 abstract: >
   A novel self-powered point-of-care low-power electronics approach for galvanic
@@ -29,9 +29,8 @@ abstract: >
   system conception was validated for a particular case. The scenario consisted
   of the measurement of a NaCl solution as the electrolyte, which was related to
   the conductivity of the sample. The electronic reader continuously measured
-  the current with a transfer function gain of 1.012 V mA<sup>−1</sup>. The
+  the current with a transfer function gain of 1.012 V mA⁻¹. The
   overall system exhibited a maximum coefficient of variation of 6.1%, which was
   an improvement compared with the state-of-the-art. The proof of concept of
   this electronics system was validated with a maximum power consumption of 5.8
   μW using commercial-off-the-self parts.
-preprint: /preprints/sensors-21-02665-v3.pdf

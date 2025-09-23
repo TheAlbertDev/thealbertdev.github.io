@@ -1,0 +1,22 @@
+title: >-
+  'Plug-and-Power' Point-of-Care diagnostics: A novel approach for self-powered electronic reader-based portable analytical devices
+type: journal
+pubYear: 2018
+pubMonth: 07
+pubDay: 18
+doi: 10.1016/j.bios.2018.07.034
+journal: Biosensors and Bioelectronics
+authors:
+  - Yaiza Montes-Cebrián
+  - Lorena del Torno-de Román
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Shelley D. Minteer
+  - Neus Sabaté
+  - Pere Ll. Miribel-Català
+  - Juan Pablo Esquivel
+publisher: Elsevier
+volume: "118"
+pages: 88-96
+abstract: >
+  This paper presents an innovative approach in the portable Point-of-Care diagnostics field, the Plug-and-Power concept. In this new disposable sensor and plug-and-play reader paradigm, the energy required to perform a measurement is always available within the disposable test component. The reader unit contains all the required electronic modules to run the test, process data and display the result, but does not include any battery or power source. Instead, the disposable part acts as both the sensor and the power source. Additionally, this approach provides environmental benefits related to battery usage and disposal, as the paper-based power source has non-toxic redox chemistry that makes it eco-friendly and safe to follow the same waste stream as disposable test strips. The feasibility of this Plug-and-Power approach is demonstrated in this work with the development of a self-powered portable glucometer consisting of two parts: a test strip including a paper-based power source and a paper-based biofuel cell as a glucose sensor; and an application-specific battery-less electronic reader designed to extract the energy from the test strip, process the signal provided and show the glucose concentration on a display. The device was tested with human serum samples with glucose concentrations between 5 and 30 mM, providing quantitative results in good agreement with commercial measuring instruments. The advantages of the present approach can be extended to any kind of biosensors measuring different analytes and biological matrices, and in this way, strengthen the goals of Point-of-Care diagnostics towards laboratory decentralization, personalized medicine and improving patient compliance.

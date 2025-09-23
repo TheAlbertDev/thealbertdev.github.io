@@ -1,0 +1,16 @@
+title: >-
+  Self-powered Energy Harvesting Systems for Health Supervising Applications
+type: book
+pubYear: 2022
+pubMonth: 09
+pubDay: 29
+doi: 10.1007/978-981-19-5619-5
+isbn: 978-981-19-5618-8
+journal: SpringerBriefs in Applied Sciences and Technology
+authors:
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Pere Lluís Miribel Català
+publisher: Springer
+abstract: >
+  This book highlights the current and recent state-of-the-art developments in energy harvesting systems for health supervising applications. It explores the exciting potential of energy harvesting as a crosscutting field of research to intersect with other areas to envisage new products, solutions, and applications. Among all these new opportunities for synergy, there is a research area that fully matches the features offered by energy harvesting with its power supply's main needs- health supervising (HS), which consists of monitoring the health or operating conditions of anything, such as structures, buildings, public health, environment, etc. The book covers the hand in hand evolution towards a new paradigm: truly self-powered devices based on a single transducer acting as a sensor and as power source simultaneously and efficiently. This evolution is illustrated by the concept and implementation of novel state-of-the-art architecture for self-powered energy harvesting systems for applications that range from structural health monitoring to point-of-care medical devices.

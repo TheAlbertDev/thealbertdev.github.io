@@ -1,0 +1,19 @@
+title: >-
+  Self-Powered Portable Electronic Reader for Point-of-Care Amperometric Measurements
+type: journal
+pubYear: 2019
+pubMonth: 08
+pubDay: 27
+doi: 10.3390/s19173715
+journal: Sensors
+authors:
+  - Yaiza Montes-Cebrián
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Manel Puig-Vidal
+  - Pere Ll. Miribel-Català
+publisher: MDPI
+volume: "19 (17)"
+number: "3715"
+abstract: >
+  In this work, we present a self-powered electronic reader (e-reader) for point-of-care diagnostics based on the use of a fuel cell (FC) which works as a power source and as a sensor. The self-powered e-reader extracts the energy from the FC to supply the electronic components concomitantly, while performing the detection of the fuel concentration. The designed electronics rely on straightforward standards for low power consumption, resulting in a robust and low power device without needing an external power source. Besides, the custom electronic instrumentation platform can process and display fuel concentration without requiring any type of laboratory equipment. In this study, we present the electronics system in detail and describe all modules that make up the system. Furthermore, we validate the device's operation with different emulated FCs and sensors presented in the literature. The e-reader can be adjusted to numerous current ranges up to 3 mA, with a 13 nA resolution and an uncertainty of 1.8%. Besides, it only consumes 900 µW in the low power mode of operation, and it can operate with a minimum voltage of 330 mV. This concept can be extended to a wide range of fields, from biomedical to environmental applications.

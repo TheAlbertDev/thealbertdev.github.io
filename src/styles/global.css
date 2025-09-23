@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .collapse-plus > .collapse-title:after {
+    top: 0 !important;
+  }
+}

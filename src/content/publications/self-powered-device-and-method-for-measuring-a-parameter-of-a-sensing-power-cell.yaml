@@ -1,0 +1,16 @@
+title: >-
+  Self-powered Device and Method for Measuring a Parameter of a Sensing Power Cell
+type: patent
+pubYear: 2022
+pubMonth: 06
+pubDay: 23
+journal: Patent
+authors:
+  - A. Álvarez-Carulla
+  - Y. Montes-Cebrián
+  - P. Miribel-Català
+  - J. Colomer-Farrarons
+  - M. Puig-Vidal
+number: WO/2022/129270
+abstract: >
+  A self-powered device and a method for measuring a parameter of a sensing power cell are disclosed. The device comprises an electronic unit to be connected to a sensing power cell; a parameter associated to the sensing power cell being measurable via the electronic unit. The electronic unit includes a storage element to be charged by the sensing power cell via a charging voltage; a sensing module to measure a generated electrical current during the charging of the storage element, and to generate a voltage as a result; a data interface module connected to the sensing module to receive the generated voltage; and a detection module to monitor the charging voltage, and, when the latter has reached a pre-configured polarization voltage, to indicate to the data interface module to convert the received voltage to a readable result. A Point-of-care device is also disclosed.

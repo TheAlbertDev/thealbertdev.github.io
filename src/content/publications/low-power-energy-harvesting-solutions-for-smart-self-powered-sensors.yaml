@@ -1,0 +1,16 @@
+title: >-
+  Low-Power Energy Harvesting Solutions for Smart Self-Powered Sensors
+type: chapter
+pubYear: 2018
+pubMonth: 09
+pubDay: 03
+doi: 10.1201/9781351250092
+isbn: 978-135-12-5009-2
+journal: Sensors for Diagnostics and Monitoring
+authors:
+  - Albert Álvarez-Carulla
+  - Jordi Colomer-Farrarons
+  - Pere Lluís Miribel Català
+publisher: CRC Press
+abstract: >
+  This chapter reviews the principal sources of energy present in the environment that are capable of being recovered and converted to electrical energy, with attention to those orientated to the micro- or nanoscale. The ability to recover energy on the micro- or nanoscale requires the development of efficient conduction elements, and great importance of energy modelization in the design of these new self-powered nanodevices and the conception of nanonetworks are envisaged. The chapter also reviews state-of-the-art energy harvesting, focusing on the idea of using different types of energy sources to drive ultra-low-power electronics. As a result, combining highly efficient low-power energy recovery electronics with maximum power point tracking algorithms opens the door to develop new portable devices in very different areas: from human wearable and implantable devices to structural health monitoring and smart sensor motes. Special interest is focused on the field of energy harvesting for self-powered sensors and their expected impact against the greenhouse effect.

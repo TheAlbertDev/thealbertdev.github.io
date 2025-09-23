@@ -25,6 +25,11 @@ export const ui = {
     "post.share": "Compartir",
     "post.toc": "Tabla de contenidos",
     "publications.title": "Publicaciones",
+    "publications.published": "Publicado",
+    "publications.volume": "Volumen",
+    "publications.number": "Número",
+    "publications.pages": "Páginas",
+    "publications.publisher": "Editorial",
   },
   en: {
     "meta.description": "Albert Álvarez Carulla's personal website",
@@ -44,6 +49,11 @@ export const ui = {
     "post.share": "Share",
     "post.toc": "Table of contents",
     "publications.title": "Publications",
+    "publications.published": "Published",
+    "publications.volume": "Volume",
+    "publications.number": "Number",
+    "publications.pages": "Pages",
+    "publications.publisher": "Publisher",
   },
 } as const;
 

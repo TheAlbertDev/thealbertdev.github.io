@@ -1,0 +1,20 @@
+title: >-
+  High-efficient energy harvesting architecture for self-powered thermal-monitoring wireless sensor node based on a single thermoelectric generator
+type: journal
+pubYear: 2023
+pubMonth: 01
+pubDay: 30
+doi: 10.1038/s41598-023-28378-6
+journal: Scientific Reports
+authors:
+  - Albert Álvarez-Carulla
+  - Albert Saiz-Vela
+  - Manel Puig-Vidal
+  - Jaime López-Sánchez
+  - Jordi Colomer-Farrarons
+  - Pere Ll. Miribel-Català 
+publisher: Nature
+volume: "13"
+number: 1637 (2023)
+abstract: >
+  In recent years, research on transducers and system architectures for self-powered devices has gained attention for their direct impact on the Internet of Things in terms of cost, power consumption, and environmental impact. The concept of a wireless sensor node that uses a single thermoelectric generator as a power source and as a temperature gradient sensor in an efficient and controlled manner is investigated. The purpose of the device is to collect temperature gradient data in data centres to enable the application of thermal-aware server load management algorithms. By using a maximum power point tracking algorithm, the operating point of the thermoelectric generator is kept under control while using its power-temperature transfer function to measure the temperature gradient. In this way, a more accurate measurement of the temperature gradient is achieved while harvesting energy with maximum efficiency. The results show the operation of the system through its different phases as well as demonstrate its ability to efficiently harvest energy from a temperature gradient while measuring it. With this system architecture, temperature gradients can be measured with a maximum error of 0.14 °C and an efficiency of over 92% for values above 13 °C and a single transducer.

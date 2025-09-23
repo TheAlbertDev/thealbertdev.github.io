@@ -1,0 +1,19 @@
+title: >-
+  Self-Powered Adaptive Switched Architecture Storage
+type: proceeding
+pubYear: 2016
+pubMonth: 12
+pubDay: 6
+doi: 10.1088/1742-6596/773/1/012103
+journal: "Journal of Physics: Conference Series"
+authors:
+  - F. El Mahboubi
+  - M. Bafleur
+  - V. Boitier
+  - A. Alvarez
+  - J. Colomer
+  - P. Miribel
+  - J-M. Dilhac
+publisher: IOP Science
+abstract: >
+  Ambient energy harvesting coupled to storage is a way to improve the autonomy of wireless sensors networks. Moreover, in some applications with harsh environment or when a long service lifetime is required, the use of batteries is prohibited. Ultra-capacitors provide in this case a good alternative for energy storage. Such storage must comply with the following requirements: a sufficient voltage during the initial charge must be rapidly reached, a significant amount of energy should be stored and the unemployed residual energy must be minimised at discharge. To answer these apparently contradictory criteria, we propose a selfadaptive switched architecture consisting of a matrix of switched ultra-capacitors. We present the results of a self-powered adaptive prototype that shows the improvement in terms of charge time constant, energy utilization rate and then energy autonomy.
