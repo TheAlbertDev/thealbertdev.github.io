@@ -25,7 +25,8 @@ export function getStaticPaths() {
 const lang = getLangFromUrl(Astro.url);
 const slug = getUrlWithoutLang(Astro.url);
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
-const page = (await getEntry("pages", `${lang}/${slug}`))!;
+const contentId = lang === "en" ? "about" : "acerca-de";
+const page = (await getEntry("pages", `${lang}/${contentId}`))!;
 const { Content } = await page.render();
 ---
 
