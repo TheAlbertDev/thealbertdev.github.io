@@ -65,7 +65,7 @@ const publications = (await getCollection("publications")).sort(
             </div>
             <div class="collapse-content px-0 text-md">
               <div>{publication.data.abstract}</div>
-              <div class="flex gap-4 mt-4 mb-16">
+              <div class="flex flex-wrap gap-4 mt-4 mb-16">
                 {publication.data.publisher && (
                   <div>
                     {t("publications.publisher")}: {publication.data.publisher}
