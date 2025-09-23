@@ -4,7 +4,7 @@ import { getLangFromUrl, useTranslatedPath } from "../i18n/utils";
 import type { CollectionEntry } from "astro:content";
 import GradientTag from "./GradientTag.astro";
 import { Image } from "astro:assets";
-import type { ImageMetadata } from 'astro';
+import type { ImageMetadata } from "astro";
 
 const lang = getLangFromUrl(Astro.url);
 const translatePath = useTranslatedPath(lang);
@@ -15,9 +15,17 @@ const authors = await Promise.all(
   post.data.authors.map((authorEntry) => getEntry(authorEntry.author)),
 );
 
-const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/imgs/*.{jpeg,jpg,png,gif}')
-if (!images[post.data.image!]) throw new Error(`"${post.data.image}" does not exist in glob: "src/assets/imgs/*.{jpeg,jpg,png,gif}"`);
-if (!images[authors[0].data.image!]) throw new Error(`"${authors[0].data.image!}" does not exist in glob: "src/assets/imgs/*.{jpeg,jpg,png,gif}"`);
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/imgs/*.{jpeg,jpg,png,gif}",
+);
+if (!images[post.data.image!])
+  throw new Error(
+    `"${post.data.image}" does not exist in glob: "src/assets/imgs/*.{jpeg,jpg,png,gif}"`,
+  );
+if (!images[authors[0].data.image!])
+  throw new Error(
+    `"${authors[0].data.image!}" does not exist in glob: "src/assets/imgs/*.{jpeg,jpg,png,gif}"`,
+  );
 ---
 
 <li>
@@ -45,7 +53,7 @@ if (!images[authors[0].data.image!]) throw new Error(`"${authors[0].data.image!}
           >{post.data.title}</a
         >
       </h3>
-      <p class="text-base-content text-opacity-65 my-4">
+      <p class="text-base-content opacity-65 my-4">
         {post.data.description}
       </p>
       <footer class="text-sm flex justify-start items-center">
@@ -54,7 +62,11 @@ if (!images[authors[0].data.image!]) throw new Error(`"${authors[0].data.image!}
             <>
               <span class="avatar mr-4">
                 <div class="w-10 rounded-full">
-                  <Image src={images[authors[0].data.image!]()} alt={author.data.name} width="40"/>
+                  <Image
+                    src={images[authors[0].data.image!]()}
+                    alt={author.data.name}
+                    width="40"
+                  />
                 </div>
               </span>
               <span>{author.data.name}</span>
