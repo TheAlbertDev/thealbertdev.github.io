@@ -1,0 +1,71 @@
+---
+title: "Oscilloscope for newbies I: probes and scales"
+description: >-
+  This post is part of a series explaining the basics of oscilloscopes. In this first post, oscilloscopes are introduced, with a detailed explanation of probes, how to connect them, and how to use and interpret the vertical and horizontal scales.
+draft: true
+category: en/electronics
+tags:
+  - oscilloscope
+  - probes
+  - scales
+  - beginner
+image: /src/assets/imgs/oscilloscope-fire.jpg
+authors:
+  - author: albert-alvarez
+pubDate: 2026-02-23T00:00:00.000Z
+translatedPosts:
+  - translatedPost: es/osciloscopio-para-principiantes-i-sondas-y-escalas
+---
+
+Oscilloscopes are essential tools for anyone working with electronics, allowing you to visualize electrical signals in real time. In this first part of the series, we'll introduce the basics of oscilloscopes, focusing on probes, how to connect them to your circuit, and how to understand the vertical and horizontal scales. More advanced topics like triggering, probe calibration, and measurements will be covered in future posts.
+
+## What is an Oscilloscope?
+
+An oscilloscope is an instrument that displays voltage signals as a function of time. It helps you see how signals change, diagnose problems, and understand circuit behavior.
+
+## Probes: Your Connection to the Circuit
+
+The probe is the interface between your circuit and the oscilloscope. It consists of a tip (for the signal) and a ground clip (for reference). Proper connection is crucial:
+
+- **Signal Tip:** Touches the point in the circuit you want to measure.
+- **Ground Clip:** Connects to the circuit's ground. Always connect the ground clip as close as possible to your measurement point to avoid noise and inaccurate readings.
+
+### Types of Probes
+
+- **Passive Probes:** Most common, usually 1x or 10x attenuation. 10x probes are preferred for most measurements as they reduce loading on the circuit.
+- **Active Probes:** Used for high-frequency or sensitive measurements, but are more expensive and fragile.
+
+### Probe Attenuation (1x/10x)
+
+Many probes have a switch for 1x or 10x attenuation. 10x mode reduces the signal amplitude by a factor of 10, allowing you to measure higher voltages and minimizing the probe's effect on your circuit. Make sure the oscilloscope is set to match the probe's attenuation setting.
+
+## Connecting the Probe
+
+1. Attach the probe to the oscilloscope input.
+2. Set the probe to the desired attenuation (usually 10x).
+3. Connect the ground clip to the circuit ground.
+4. Touch the probe tip to the signal point.
+
+## Understanding the Scales
+
+Oscilloscopes have two main scales:
+
+### Vertical Scale (Volts/Division)
+
+- Controls how much voltage each vertical division on the screen represents.
+- Adjust to fit your signal within the display area.
+- Example: If set to 2V/div and your signal fills 3 divisions, the peak-to-peak voltage is 6V.
+
+### Horizontal Scale (Time/Division)
+
+- Controls how much time each horizontal division represents.
+- Adjust to see more or less of the signal's period.
+- Example: If set to 1ms/div and a waveform cycle spans 5 divisions, the period is 5ms (frequency = 1/5ms = 200Hz).
+
+## Summary
+
+- Always connect the probe ground properly.
+- Use 10x attenuation for most measurements.
+- Adjust vertical and horizontal scales to clearly view your signal.
+
+In the next post, we'll cover triggering, probe calibration, and how to make accurate measurements with your oscilloscope.

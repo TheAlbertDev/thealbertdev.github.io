@@ -17,7 +17,8 @@ const lastPosts = (
   await getCollection(
     "posts",
     ({ data: { draft }, id }) =>
-      draft === false && id.startsWith(lang ?? defaultLang),
+      (draft === false || import.meta.env.DEV) &&
+      id.startsWith(lang ?? defaultLang),
   )
 )
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())

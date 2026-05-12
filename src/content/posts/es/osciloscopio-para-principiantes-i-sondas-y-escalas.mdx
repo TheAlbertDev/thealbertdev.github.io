@@ -1,0 +1,71 @@
+---
+title: "Osciloscopio para principiantes I: sondas y escalas"
+description: >-
+  Esta entrada es parte de una serie para explicar los conceptos básicos de los osciloscopios. En este primer post se introduce el osciloscopio, se explican las sondas, cómo conectarlas y cómo utilizar e interpretar las escalas vertical y horizontal.
+draft: true
+category: es/electronica
+tags:
+  - osciloscopio
+  - sondas
+  - escalas
+  - principiantes
+image: /src/assets/imgs/oscilloscope-fire.jpg
+authors:
+  - author: albert-alvarez
+pubDate: 2026-02-23T00:00:00.000Z
+translatedPosts:
+  - translatedPost: en/oscilloscope-for-newbies-i-probes-and-scales
+---
+
+Los osciloscopios son herramientas esenciales para cualquiera que trabaje con electrónica, ya que permiten visualizar señales eléctricas en tiempo real. En esta primera parte de la serie, se introducen los conceptos básicos del osciloscopio, centrándonos en las sondas, cómo conectarlas al circuito y cómo entender las escalas vertical y horizontal. Temas más avanzados como el disparo, la calibración de la sonda y las medidas se tratarán en futuras publicaciones.
+
+## ¿Qué es un osciloscopio?
+
+Un osciloscopio es un instrumento que muestra señales de voltaje en función del tiempo. Ayuda a ver cómo cambian las señales, diagnosticar problemas y comprender el comportamiento de los circuitos.
+
+## Sondas: tu conexión con el circuito
+
+La sonda es la interfaz entre tu circuito y el osciloscopio. Consta de una punta (para la señal) y una pinza de masa (como referencia). Una conexión adecuada es fundamental:
+
+- **Punta de señal:** Toca el punto del circuito que quieres medir.
+- **Pinza de masa:** Se conecta a la masa del circuito. Conéctala siempre lo más cerca posible del punto de medida para evitar ruidos y lecturas incorrectas.
+
+### Tipos de sondas
+
+- **Sondas pasivas:** Las más comunes, suelen tener atenuación 1x o 10x. Se recomienda usar 10x para la mayoría de medidas, ya que reducen la carga sobre el circuito.
+- **Sondas activas:** Usadas para medidas de alta frecuencia o muy sensibles, pero son más caras y frágiles.
+
+### Atenuación de la sonda (1x/10x)
+
+Muchas sondas tienen un interruptor para seleccionar atenuación 1x o 10x. El modo 10x reduce la amplitud de la señal por un factor de 10, permitiendo medir mayores voltajes y minimizando el efecto de la sonda sobre el circuito. Asegúrate de que el osciloscopio esté configurado para coincidir con la atenuación de la sonda.
+
+## Conexión de la sonda
+
+1. Conecta la sonda a la entrada del osciloscopio.
+2. Selecciona la atenuación deseada (normalmente 10x).
+3. Conecta la pinza de masa a la masa del circuito.
+4. Toca con la punta de la sonda el punto de señal.
+
+## Entendiendo las escalas
+
+Los osciloscopios tienen dos escalas principales:
+
+### Escala vertical (Voltios/división)
+
+- Controla cuántos voltios representa cada división vertical en la pantalla.
+- Ajusta para que la señal se vea completa en el área de visualización.
+- Ejemplo: Si está en 2V/div y la señal ocupa 3 divisiones, el voltaje pico a pico es 6V.
+
+### Escala horizontal (Tiempo/división)
+
+- Controla cuánto tiempo representa cada división horizontal.
+- Ajusta para ver más o menos periodos de la señal.
+- Ejemplo: Si está en 1ms/div y un ciclo de la señal ocupa 5 divisiones, el periodo es 5ms (frecuencia = 1/5ms = 200Hz).
+
+## Resumen
+
+- Conecta siempre correctamente la masa de la sonda.
+- Usa atenuación 10x para la mayoría de medidas.
+- Ajusta las escalas vertical y horizontal para visualizar bien la señal.
+
+En el próximo post se tratarán el disparo, la calibración de la sonda y cómo realizar medidas precisas con el osciloscopio.
