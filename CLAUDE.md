@@ -47,6 +47,15 @@ relatedPosts:
   - relatedPost: en/another-slug       # optional
 ```
 
+## Testing
+
+```sh
+npm test   # Run Playwright smoke tests (requires preview server running on port 3001)
+```
+
+- **Always run tests before considering a task done.** All tests must pass — a job is not complete if `npm test` is failing.
+- To run tests locally: build the site (`npm run build`), start preview on port 3001 (`npx astro preview --port 3001`), then run `npm test` in a separate terminal.
+
 ## Conventions
 
 - **Always create content for both languages.** New posts, pages, and categories must have both an `es/` and an `en/` version to maintain i18n consistency.
