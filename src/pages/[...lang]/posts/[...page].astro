@@ -18,7 +18,7 @@ export const getStaticPaths = (async ({ paginate }) => {
     await Promise.all(
       Object.keys(languages).flatMap(async (lang) => {
         const posts = (await getCollection("posts"))
-          .filter((post) => post.slug.split("/")[0] === lang)
+          .filter((post) => post.id.split("/")[0] === lang)
           .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 
         return paginate(posts, {
