@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getEntry } from "astro:content";
+import { getEntry, render } from "astro:content";
 
 import { languages, defaultLang } from "../../i18n/ui";
 import {
@@ -27,7 +27,7 @@ const slug = getUrlWithoutLang(Astro.url);
 const t = useTranslations((lang ?? defaultLang) as keyof typeof languages);
 const contentId = lang === "en" ? "about" : "acerca-de";
 const page = (await getEntry("pages", `${lang}/${contentId}`))!;
-const { Content } = await page.render();
+const { Content } = await render(page);
 ---
 
 <Layout title={t("nav.about")}>

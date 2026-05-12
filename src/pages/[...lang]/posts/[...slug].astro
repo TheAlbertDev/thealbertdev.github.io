@@ -1,6 +1,5 @@
 ---
-import { getEntry } from "astro:content";
-import { getCollection } from "astro:content";
+import { getEntry, getCollection, render } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import GradientTag from "../../../components/GradientTag.astro";
 import { defaultLang, languages } from "../../../i18n/ui";
@@ -20,13 +19,13 @@ import { getImage } from "astro:assets";
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
   return posts.map((post) => {
-    const { slug } = post;
+    const { id } = post;
 
     return {
       params: {
         lang:
-          slug.split("/")[0] === defaultLang ? undefined : slug.split("/")[0],
-        slug: slug.split("/")[1],
+          id.split("/")[0] === defaultLang ? undefined : id.split("/")[0],
+        slug: id.split("/")[1],
       },
     };
   });
@@ -42,8 +41,8 @@ const category = await getEntry(post.data.category);
 const authors = await Promise.all(
   post.data.authors.map((author) => getEntry(author.author)),
 );
-const { Content, headings } = await post.render();
-const readingMinutes = Math.ceil(readingTime(post.body).minutes);
+const { Content, headings } = await render(post);
+const readingMinutes = Math.ceil(readingTime(post.body ?? "").minutes);
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "/src/assets/imgs/*.{jpeg,jpg,png,gif}",

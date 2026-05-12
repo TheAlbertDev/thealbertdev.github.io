@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import icon from "astro-icon";
-import tailwind from "@astrojs/tailwind";
+import tailwindcss from "@tailwindcss/vite";
 import sectionize from "@hbsnow/rehype-sectionize";
 import expressiveCode from "astro-expressive-code";
 import partytown from '@astrojs/partytown'
@@ -31,9 +31,11 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 3000,
   },
+  vite: {
+    plugins: [tailwindcss()],
+  },
   integrations: [
     icon(),
-    tailwind(),
     expressiveCode(),
     sitemap(),
     partytown({
