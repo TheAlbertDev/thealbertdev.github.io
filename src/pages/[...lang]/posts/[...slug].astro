@@ -17,7 +17,10 @@ import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts");
+  const posts = await getCollection(
+    "posts",
+    ({ data: { draft } }) => draft === false || import.meta.env.DEV,
+  );
   return posts.map((post) => {
     const { id } = post;
 
