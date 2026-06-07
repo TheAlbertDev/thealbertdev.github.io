@@ -41,6 +41,33 @@ async function checkNoConsoleErrors(page: Page, url: string) {
   return errors;
 }
 
+const DRAFT_POSTS = [
+  {
+    url: "/en/posts/oscilloscope-for-newbies-i-probes-and-scales/",
+    title: "Oscilloscope for newbies I: probes and scales",
+    listUrl: "/en/posts/",
+    label: "EN draft: Oscilloscope",
+  },
+  {
+    url: "/posts/osciloscopio-para-principiantes-i-sondas-y-escalas/",
+    title: "Osciloscopio para principiantes I",
+    listUrl: "/posts/",
+    label: "ES draft: Osciloscopio",
+  },
+];
+
+for (const { url, title, listUrl, label } of DRAFT_POSTS) {
+  test(`${label} — direct URL returns 404`, async ({ page }) => {
+    const response = await page.goto(url);
+    expect(response?.status(), `Expected 404 for draft post ${url}`).toBe(404);
+  });
+
+  test(`${label} — not listed in blog section`, async ({ page }) => {
+    await page.goto(listUrl);
+    await expect(page.getByText(title, { exact: false })).not.toBeVisible();
+  });
+}
+
 for (const { url, label } of ROUTES) {
   test(`${label} — HTTP 200`, async ({ page }) => {
     const response = await page.goto(url);
