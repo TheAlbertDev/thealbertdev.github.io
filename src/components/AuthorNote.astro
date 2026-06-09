@@ -19,9 +19,9 @@ if (!images[author.data.image!]) throw new Error(`"${author.data.image!}" does n
 
 {
   notes.map((note) => (
-    <div class="chat chat-start">
-      <div class="chat-image avatar">
-        <div class="w-10 rounded-full">
+    <div class="chat chat-start not-prose">
+      <div class="chat-image avatar [grid-row:2/3]">
+        <div class="w-10 h-10 rounded-full">
           <Image src={images[author.data.image!]()} alt={author.data.name} width="40" class="m-0"/>
         </div>
       </div>
