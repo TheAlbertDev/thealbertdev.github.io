@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# test artifacts
+test-results/
+
 # generated types
 .astro/
 
